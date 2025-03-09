@@ -73,14 +73,38 @@ pub fn build(b: *std.Build) void {
     // });
 
     // const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
+    // Make the test_roms_dir available to source
+    const test_roms_dir = b.path("test_roms");
+    const build_options = b.addOptions();
+    build_options.addOptionPath("test_roms_dir", test_roms_dir);
 
     const exe_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
+    exe_unit_tests.root_module.addOptions("build_options", build_options);
+
+    // Context State Tests
+    const chip8_context_tests = b.addTest(.{
+        .root_source_file = b.path("src/chip8_context.zig"),
+        .target = target,
+        .optimize = optimize,
+        .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
+    });
+    chip8_context_tests.root_module.addOptions("build_options", build_options);
+
+    const chip8_tests = b.addTest(.{
+        .root_source_file = b.path("src/chip8.zig"),
+        .target = target,
+        .optimize = optimize,
+        .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
+    });
+    chip8_tests.root_module.addOptions("build_options", build_options);
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
+    const run_chip8_context_tests = b.addRunArtifact(chip8_context_tests);
+    const run_chip8_tests = b.addRunArtifact(chip8_tests);
 
     // Similar to creating the run step earlier, this exposes a `test` step to
     // the `zig build --help` menu, providing a way for the user to request
@@ -88,4 +112,6 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run unit tests");
     // test_step.dependOn(&run_lib_unit_tests.step);
     test_step.dependOn(&run_exe_unit_tests.step);
+    test_step.dependOn(&run_chip8_context_tests.step);
+    test_step.dependOn(&run_chip8_tests.step);
 }
