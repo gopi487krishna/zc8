@@ -55,7 +55,7 @@ pub const Chip8 = struct {
         const n: u4 = @intCast(instruction & 0x000F);
         const opcode = switch ((instruction & 0xF000) >> 12) {
             0x0 => switch (instruction & 0x00FF) {
-                0x00E0 => Opcode.CLS,
+     0x00E0 => Opcode.CLS,
                 0x00EE => Opcode.RET,
                 else => Opcode.SYS_addr,
             },
@@ -120,8 +120,6 @@ pub const Chip8 = struct {
         const nnn: u16 = instruction & 0x0FFF;
 
         self.ctx.pc += 2;
-
-        _ = n;
 
 
         switch (opcode) {
@@ -206,7 +204,35 @@ pub const Chip8 = struct {
                 const random_value = rand.intRangeAtMost(u8, 0, 255);
                 self.ctx.v[Vx] = random_value & nn;
             },
-            .DRW_Vx_Vy_n => {},
+            .DRW_Vx_Vy_n => {
+                // x coordinate in FB
+                const x = self.ctx.v[Vx] & 63;
+                // y coordinate in FB
+                const y = self.ctx.v[Vy] & 31;
+                const Vf = 0xF;
+                // Flag initially set to 0
+                self.ctx.v[Vf] = 0;
+                // n represents the total height of the sprite (num rows)
+                for (0..n) |row| {
+                    // Read the sprite width info
+                    const data = self.ctx.memory[self.ctx.i + row];
+
+                    // Each sprite data is 8 bit
+                    for (0..8) |pix_usize| {
+                        const pixel: u3 = @intCast(pix_usize);
+                        const bitpos: u3 = 7 - pixel;
+                        const mask = @as(u8,1) << bitpos;
+                        const sprite_pixel_set = data & mask;
+                        const pos = ((y + row) * 64) + (x + pixel);
+                        if (sprite_pixel_set != 0) {
+                            if (self.ctx.frame_buffer[pos] == 1) {
+                                self.ctx.v[Vf] = 0x1; // Collision detected
+                            }
+                            self.ctx.frame_buffer[pos] ^= 1;
+                        }
+                    }
+                }
+            },
             .SKP_Vx => {
                 const Vx_val = self.ctx.v[Vx];
                 const key: KeyPad.Key = @enumFromInt(Vx_val);
@@ -793,7 +819,77 @@ test "Opcode.RND_Vx_byte" {
 }
 // Dxyn
 test "Opcode.DRW_Vx_Vy_n" {
-    // Write tests for Dxyn Instruction. AI!
+    var ctx = try Chip8Context.initContext();
+    defer ctx.deinit();
+    var chip8 = Chip8 { .ctx = &ctx };
+
+    const Vx = 0;
+    const Vy = 1;
+    const n = 5; // Height of sprite
+    
+    ctx.v[Vx] = 10;
+    ctx.v[Vy] = 10;
+    
+    ctx.i = 0x300;
+    
+    // Draw a vertical line
+    ctx.memory[0x300] = 0x80;
+    ctx.memory[0x301] = 0x80;
+    ctx.memory[0x302] = 0x80;
+    ctx.memory[0x303] = 0x80;
+    ctx.memory[0x304] = 0x80;
+
+    const rom_data = createInstruction(0xD, Vx, Vy, n);
+
+    try chip8.loadRomFromArray(rom_data[0..]);
+    try chip8.execute();
+
+    try std.testing.expectEqual(0x1,ctx.frame_buffer[10*64 + 10]);
+    try std.testing.expectEqual(0x1,ctx.frame_buffer[11*64 + 10]); 
+    try std.testing.expectEqual(0x1,ctx.frame_buffer[12*64 + 10]); 
+    try std.testing.expectEqual(0x1,ctx.frame_buffer[13*64 + 10]); 
+    try std.testing.expectEqual(0x1,ctx.frame_buffer[14*64 + 10]); 
+
+}
+
+// Dxyn with collision
+test "Opcode.DRW_Vx_Vy_n_collision" {
+    var ctx = try Chip8Context.initContext();
+    defer ctx.deinit();
+    var chip8 = Chip8 { .ctx = &ctx };
+
+    const Vx= 0;
+    const Vy= 1;
+    const n1= 5; // Height of sprite
+    
+    ctx.v[Vx] = 10;
+    ctx.v[Vy] = 10;
+    
+    ctx.i = 0x300;
+    
+    // Draw a vertical line
+    ctx.memory[0x300] = 0x80;
+    ctx.memory[0x301] = 0x80;
+    ctx.memory[0x302] = 0x80;
+    ctx.memory[0x303] = 0x80;
+    ctx.memory[0x304] = 0x80;
+
+    // Draw a horizontal line intersecting the vertical line
+    const n2= 1; // Height of sprite
+    ctx.memory[0x305] = 0xFF;
+
+    const inst1 = createInstruction(0xD, Vx, Vy, n1);
+    const inst2 = createInstruction(0xD, Vx, Vy, n2);
+
+    const rom_data = inst1 ++ inst2;
+
+    try chip8.loadRomFromArray(rom_data[0..]);
+    try chip8.execute();
+
+    try std.testing.expectEqual(0x0, ctx.v[0xF]);
+    try chip8.execute();
+    try std.testing.expectEqual(0x1, ctx.v[0xF]);
+
 }
 // Ex9E
 test "Opcode.SKP_Vx_pressed" {
