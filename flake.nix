@@ -18,7 +18,7 @@
     in
     {
       devShell.x86_64-linux = pkgs.mkShell {
-        buildInputs = with pkgs; [nixpkgs-fmt zigpkgs.master];
+        buildInputs = with pkgs; [nixpkgs-fmt zigpkgs.master SDL2];
       };
   };
 }
