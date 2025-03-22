@@ -93,6 +93,8 @@ pub fn build(b: *std.Build) void {
     const build_options = b.addOptions();
     build_options.addOptionPath("test_roms_dir", test_roms_dir);
 
+    exe.root_module.addOptions("build_options", build_options);
+
     const exe_unit_tests = b.addTest(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
