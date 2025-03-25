@@ -158,7 +158,10 @@ pub const Chip8 = struct {
                 }
             },
             .LD_Vx_byte => self.ctx.v[Vx] = nn,
-            .ADD_Vx_byte => self.ctx.v[Vx] += nn,
+            .ADD_Vx_byte => {
+                const result = @addWithOverflow(self.ctx.v[Vx], nn);
+                self.ctx.v[Vx] = result[0];
+            },
             .LD_Vx_Vy => self.ctx.v[Vx] = self.ctx.v[Vy],
             .OR_Vx_Vy => self.ctx.v[Vx] |= self.ctx.v[Vy],
             .AND_Vx_Vy => self.ctx.v[Vx] &= self.ctx.v[Vy],
