@@ -258,7 +258,8 @@ pub const Chip8 = struct {
                 self.ctx.v[Vx] = self.ctx.delay_timer;
             },
             .LD_Vx_K => {
-                unreachable;
+                if (self.ctx.keypad.keypad_state == 0)
+                    self.ctx.pc -= 2;
             },
             .LD_DT_Vx => {
                 self.ctx.delay_timer = self.ctx.v[Vx];
