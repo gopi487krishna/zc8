@@ -47,16 +47,16 @@ pub const Chip8 = struct {
         UNIMPLEMENTED,
     };
 
-    pub fn clear_display(_: *Chip8) void {
-        // std.debug.print("{}BOO\n",.{});
-        //@compileError("Not Implemented");
+    pub fn clear_display(self: *Chip8) void {
+        @memset(self.ctx.frame_buffer[0..], 0);
+        self.ctx.draw_flag = true;
     }
     pub fn decode(_: *Chip8, instruction: u16) !Opcode {
         // Last 4 bit value
         const n: u4 = @intCast(instruction & 0x000F);
         const opcode = switch ((instruction & 0xF000) >> 12) {
             0x0 => switch (instruction & 0x00FF) {
-     0x00E0 => Opcode.CLS,
+            0x00E0 => Opcode.CLS,
                 0x00EE => Opcode.RET,
                 else => Opcode.SYS_addr,
             },
