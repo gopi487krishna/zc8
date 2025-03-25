@@ -236,6 +236,7 @@ pub const Chip8 = struct {
                                 self.ctx.v[Vf] = 0x1; // Collision detected
                             }
                             self.ctx.frame_buffer[pos] ^= 1;
+                            self.ctx.draw_flag = true;
                         }
                     }
                 }
