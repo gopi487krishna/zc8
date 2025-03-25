@@ -65,6 +65,7 @@ pub const Chip8Context = struct {
     halt: bool = false,
     random_source: std.Random.Xoshiro256,
     keypad: KeyPad = KeyPad{},
+    draw_flag: bool = false,
 
     pub fn initContext() !Chip8Context {
         return Chip8Context{
