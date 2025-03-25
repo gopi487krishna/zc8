@@ -124,7 +124,7 @@ pub const DisplayDriver = struct {
         return quit; 
     }
     pub fn update(self: *DisplayDriver, chip8_context: *Chip8Context) void {
-       _ = c.SDL_SetRenderDrawColor(self.renderer, 255, 255, 255, 255);
+       _ = c.SDL_SetRenderDrawColor(self.renderer, 0, 255, 0, 255);
         for (0..32) |y_usize| {
             for (0..64) |x_usize| {
                 const pixel_pos = y_usize * 64 + x_usize;
