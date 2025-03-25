@@ -107,8 +107,6 @@ pub const DisplayDriver = struct {
                     const keycode = event.key.keysym.sym;
                     const translated_keycode = translateKeyCode(keycode);
                     if (translated_keycode) |value| {
-
-                        std.debug.print("Keypress detected", .{});
                         chip8_context.keypad.pressKey(value);
                     }
                 },
@@ -116,7 +114,6 @@ pub const DisplayDriver = struct {
                     const keycode = event.key.keysym.sym;
                     const translated_keycode = translateKeyCode(keycode);
                     if (translated_keycode) |value| {
-                        std.debug.print("KeyRelease detected", .{});
                         chip8_context.keypad.releaseKey(value);
                     }
                 },
