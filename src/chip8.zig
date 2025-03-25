@@ -228,6 +228,9 @@ pub const Chip8 = struct {
                         const mask = @as(u8,1) << bitpos;
                         const sprite_pixel_set = data & mask;
                         const pos = ((y + row) * 64) + (x + pixel);
+                        if (pos >= 64*32) {
+                            continue;
+                        }
                         if (sprite_pixel_set != 0) {
                             if (self.ctx.frame_buffer[pos] == 1) {
                                 self.ctx.v[Vf] = 0x1; // Collision detected
