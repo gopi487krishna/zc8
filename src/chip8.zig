@@ -272,7 +272,8 @@ pub const Chip8 = struct {
             },
             .LD_F_Vx => {
                 const Vx_val = self.ctx.v[Vx];
-                self.ctx.i = (0x0 + Vx_val * 5);
+                const Vx_nibble:u4 = @intCast(Vx_val & 0x0F);
+                self.ctx.i = (0x0 + @as(u16,Vx_nibble) * 5);
             },
             .LD_B_Vx => {
                 const Vx_val = self.ctx.v[Vx];
