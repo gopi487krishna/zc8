@@ -60,7 +60,7 @@ pub fn main() !void {
             }
 
             if (ctx.draw_flag) {
-                display.update(&ctx);
+                try display.update(&ctx);
                 ctx.draw_flag = false;
             }
             ctx.delay_timer = if (ctx.delay_timer == 0) 0 else ctx.delay_timer - 1;

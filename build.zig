@@ -37,19 +37,26 @@ pub fn build(b: *std.Build) void {
     });
 
 
-    // SDL 2 dependency
+    // SDL 3 dependency
      if (target.query.isNativeOs() and target.result.os.tag == .linux) {
         // The SDL package doesn't work for Linux yet, so we rely on system
         // packages for now.
-        exe.linkSystemLibrary("SDL2");
+        exe.linkSystemLibrary("SDL3");
         exe.linkLibC();
     } else {
         const sdl_dep = b.dependency("sdl", .{
             .optimize = .ReleaseFast,
             .target = target,
         });
-        exe.linkLibrary(sdl_dep.artifact("SDL2"));
+        exe.linkLibrary(sdl_dep.artifact("SDL3"));
     }
+
+    // const sdl_dep = b.dependency("sdl", .{
+    //      .optimize = optimize, 
+    //      .target = target,
+    //  });
+    // const sdl_lib = sdl_dep.artifact("SDL3");
+    // exe.linkLibrary(sdl_lib);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
