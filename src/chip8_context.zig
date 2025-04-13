@@ -22,23 +22,23 @@ pub const KeyPad = struct {
         KeyF,
     };
 
-    keypad_state : u16 = 0,
+    keypad_state: u16 = 0,
 
     pub fn isKeyPressed(self: *KeyPad, key: Key) bool {
         const key_value = @intFromEnum(key);
-        const mask:u16 = (@as(u16,1) << key_value);
+        const mask: u16 = (@as(u16, 1) << key_value);
         return (mask & self.keypad_state) == mask;
     }
 
     pub fn pressKey(self: *KeyPad, key: Key) void {
         const key_value = @intFromEnum(key);
-        const mask:u16 = (@as(u16,1) << key_value);
+        const mask: u16 = (@as(u16, 1) << key_value);
         self.keypad_state |= mask;
     }
 
     pub fn releaseKey(self: *KeyPad, key: Key) void {
         const key_value = @intFromEnum(key);
-        const mask:u16 = ~(@as(u16,1) << key_value);
+        const mask: u16 = ~(@as(u16, 1) << key_value);
         self.keypad_state &= mask;
     }
 };
@@ -71,7 +71,7 @@ pub const Chip8Context = struct {
         return Chip8Context{
             .stack = std.ArrayList(u16).init(std.heap.page_allocator),
             .random_source = std.Random.DefaultPrng.init(blk: {
-                var seed : u64 = undefined;
+                var seed: u64 = undefined;
                 try std.posix.getrandom(std.mem.asBytes(&seed));
                 break :blk seed;
             }),
@@ -117,16 +117,16 @@ test "Chip 8 Context Initialization" {
     try testing.expectEqual(@as(u8, 0x0), ctx.sound_timer);
 
     // Rom location must be set to 0x200.
-    try testing.expectEqual(@as(u16,0x200), ctx.rom_location);
+    try testing.expectEqual(@as(u16, 0x200), ctx.rom_location);
 
     // Rom length must be set to zero initially
-    try testing.expectEqual(@as(usize,0x0), ctx.rom_length);
+    try testing.expectEqual(@as(usize, 0x0), ctx.rom_length);
 
     // Halt must be set to false
     try testing.expectEqual(false, ctx.halt);
 }
 
-test "KeyPad.isKeyPressed"  {
+test "KeyPad.isKeyPressed" {
     var ctx = try Chip8Context.initContext();
 
     ctx.keypad.pressKey(KeyPad.Key.KeyA);
@@ -137,4 +137,3 @@ test "KeyPad.isKeyPressed"  {
 
     try std.testing.expectEqual(false, ctx.keypad.isKeyPressed(KeyPad.Key.KeyA));
 }
-
