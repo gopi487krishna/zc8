@@ -1,7 +1,7 @@
 const c = @cImport({
-    // @cDefine("SDL_DISABLE_OLD_NAMES", {});
+    @cDefine("SDL_DISABLE_OLD_NAMES", {});
     @cInclude("SDL3/SDL.h");
-    // @cInclude("SDL3/SDL_revision.h");
+    @cInclude("SDL3/SDL_revision.h");
     // @cDefine("SDL_MAIN_HANDLED", {}); // We are providing our own entry point
     // @cInclude("SDL3/SDL_main.h");
 });
@@ -46,8 +46,8 @@ pub const DisplayDriver = struct {
         _ = c.SDL_RenderClear(self.renderer);
     }
 
-    fn translateKeyCode(keycode: c.SDL_Keycode) ?KeyPad.Key  {
-        switch(keycode) {
+    fn translateKeyCode(keycode: c.SDL_Keycode) ?KeyPad.Key {
+        switch (keycode) {
             c.SDLK_1 => {
                 return KeyPad.Key.Key1;
             },
@@ -98,7 +98,7 @@ pub const DisplayDriver = struct {
             },
             else => {
                 return null;
-            }
+            },
         }
     }
 
@@ -125,14 +125,13 @@ pub const DisplayDriver = struct {
                         chip8_context.keypad.releaseKey(value);
                     }
                 },
-                else => {
-                }
+                else => {},
             }
         }
-        return quit; 
+        return quit;
     }
     pub fn update(self: *DisplayDriver, chip8_context: *Chip8Context) !void {
-       _ = c.SDL_SetRenderDrawColor(self.renderer, 0, 255, 0, 255);
+        _ = c.SDL_SetRenderDrawColor(self.renderer, 0, 255, 0, 255);
         for (0..32) |y_usize| {
             for (0..64) |x_usize| {
                 const pixel_pos = y_usize * 64 + x_usize;
@@ -140,22 +139,15 @@ pub const DisplayDriver = struct {
                     // Draw the rectangle on the screen
                     const x: c_int = @intCast(x_usize);
                     const y: c_int = @intCast(y_usize);
-                    const rect = c.SDL_FRect {
-                        .x = @floatFromInt(x * self.scale),
-                        .y = @floatFromInt(y * self.scale),
-                        .w = @floatFromInt(self.scale),
-                        .h = @floatFromInt(self.scale)
-                    };
+                    const rect = c.SDL_FRect{ .x = @floatFromInt(x * self.scale), .y = @floatFromInt(y * self.scale), .w = @floatFromInt(self.scale), .h = @floatFromInt(self.scale) };
                     _ = c.SDL_RenderFillRect(self.renderer, &rect);
                 }
             }
         }
 
-        if(!c.SDL_RenderPresent(self.renderer)) {
+        if (!c.SDL_RenderPresent(self.renderer)) {
             c.SDL_Log("SDL_RenderPresent Failed: %s", c.SDL_GetError());
             return error.SDLRenderPresentFailed;
         }
     }
 };
-
-
