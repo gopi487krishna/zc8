@@ -339,7 +339,7 @@ pub const Chip8 = struct {
 test "Chip8.loadRomFromFile" {
     const test_roms_dir: []const u8 = @import("build_options").test_roms_dir;
     const chip8_logo_rom_path = test_roms_dir ++ "/chip8-logo.ch8";
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     try chip8.loadRomFromFile(std.testing.allocator, chip8_logo_rom_path);
 
@@ -351,7 +351,7 @@ test "Chip8.loadRomFromFile" {
 }
 
 test "Chip8.loadRomFromFile.errorRomTooLarge" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const memory_size = 4096;
     const reserved_area = 512;
@@ -384,7 +384,7 @@ test "Chip8.loadFont" {
         0xF0, 0x80, 0xF0, 0x80, 0x80, // F
     };
 
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     chip8.loadFont();
     try std.testing.expectEqualSlices(u8, font_sprites[0..], ctx.memory[0x00..0x50]);
@@ -402,7 +402,7 @@ test "Opcode.SYS_addr" {}
 test "Opcode.CLS" {}
 // 00EE
 test "Opcode.RET" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     try ctx.stack.append(0x238);
 
@@ -414,7 +414,7 @@ test "Opcode.RET" {
 }
 // 1nnn
 test "Opcode.JP_addr" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const rom_data = createInstruction(0x1, 0x2, 0x3, 0x8);
@@ -425,7 +425,7 @@ test "Opcode.JP_addr" {
 }
 // 2nnn
 test "Opcode.CALL_addr" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const rom_data = createInstruction(0x2, 0x2, 0x3, 0x8);
@@ -439,7 +439,7 @@ test "Opcode.CALL_addr" {
 }
 // 3xkk
 test "Opcode.SE_Vx_byte_ne" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
@@ -452,7 +452,7 @@ test "Opcode.SE_Vx_byte_ne" {
 }
 
 test "Opcode.SE_Vx_byte_eq" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
@@ -466,7 +466,7 @@ test "Opcode.SE_Vx_byte_eq" {
 }
 // 4xkk
 test "Opcode.SNE_Vx_byte_ne" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
@@ -479,7 +479,7 @@ test "Opcode.SNE_Vx_byte_ne" {
 }
 
 test "Opcode.SNE_Vx_byte_eq" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
@@ -494,7 +494,7 @@ test "Opcode.SNE_Vx_byte_eq" {
 }
 // 5xy0
 test "Opcode.SE_Vx_Vy_eq" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
@@ -511,7 +511,7 @@ test "Opcode.SE_Vx_Vy_eq" {
 }
 
 test "Opcode.SE_Vx_Vy_ne" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
@@ -527,7 +527,7 @@ test "Opcode.SE_Vx_Vy_ne" {
 }
 // 6xkk
 test "Opcode.LD_Vx_byte" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 8;
     const rom_data = createInstruction(0x6, Vx, 0x3, 0x4);
@@ -537,7 +537,7 @@ test "Opcode.LD_Vx_byte" {
 }
 // 7xkk
 test "Opcode.ADD_Vx_byte" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
 
@@ -549,7 +549,7 @@ test "Opcode.ADD_Vx_byte" {
 }
 // 8xy0
 test "Opcode.LD_Vx_Vy" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 3;
@@ -561,7 +561,7 @@ test "Opcode.LD_Vx_Vy" {
 }
 // 8xy1
 test "Opcode.OR_Vx_Vy" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -575,7 +575,7 @@ test "Opcode.OR_Vx_Vy" {
 }
 // 8xy2
 test "Opcode.AND_Vx_Vy" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -589,7 +589,7 @@ test "Opcode.AND_Vx_Vy" {
 }
 // 8xy3
 test "Opcode.XOR_Vx_Vy" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -603,7 +603,7 @@ test "Opcode.XOR_Vx_Vy" {
 }
 // 8xy4
 test "Opcode.ADD_Vx_Vy_nocarry" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -616,7 +616,7 @@ test "Opcode.ADD_Vx_Vy_nocarry" {
     try std.testing.expectEqual(0xE, ctx.v[Vx]);
 }
 test "Opcode.ADD_Vx_Vy_carry" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -632,7 +632,7 @@ test "Opcode.ADD_Vx_Vy_carry" {
 }
 // 8xy5
 test "Opcode.SUB_Vx_Vy_nooverflow" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -648,7 +648,7 @@ test "Opcode.SUB_Vx_Vy_nooverflow" {
 }
 
 test "Opcode.SUB_Vx_Vy_overflow" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -665,7 +665,7 @@ test "Opcode.SUB_Vx_Vy_overflow" {
 
 // 8xy6
 test "Opcode.SHR_Vx_Vy" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -680,7 +680,7 @@ test "Opcode.SHR_Vx_Vy" {
 }
 // 8xy7
 test "Opcode.SUBN_Vx_Vy_borrow" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -696,7 +696,7 @@ test "Opcode.SUBN_Vx_Vy_borrow" {
 }
 // 8xyE
 test "Opcode.SHL_Vx_Vy" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -711,7 +711,7 @@ test "Opcode.SHL_Vx_Vy" {
 }
 // 9xy0
 test "Opcode.SNE_Vx_Vy_true" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -733,7 +733,7 @@ test "Opcode.SNE_Vx_Vy_true" {
 }
 
 test "Opcode.SNE_Vx_Vy_false" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
@@ -755,7 +755,7 @@ test "Opcode.SNE_Vx_Vy_false" {
 }
 // Annn
 test "Opcode.LD_I_addr" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const rom_data = createInstruction(0xA, 0x2, 0x3, 0x8);
@@ -769,7 +769,7 @@ test "Opcode.LD_I_addr" {
 }
 // Bnnn
 test "Opcode.JP_V0_addr" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     ctx.v[0] = 0x1;
@@ -785,7 +785,7 @@ test "Opcode.JP_V0_addr" {
 }
 // Cxkk
 test "Opcode.RND_Vx_byte" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
@@ -811,7 +811,7 @@ test "Opcode.RND_Vx_byte" {
 }
 // Dxyn
 test "Opcode.DRW_Vx_Vy_n" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
 
@@ -845,7 +845,7 @@ test "Opcode.DRW_Vx_Vy_n" {
 
 // Dxyn with collision
 test "Opcode.DRW_Vx_Vy_n_collision" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
 
@@ -883,7 +883,7 @@ test "Opcode.DRW_Vx_Vy_n_collision" {
 }
 // Ex9E
 test "Opcode.SKP_Vx_pressed" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
@@ -896,7 +896,7 @@ test "Opcode.SKP_Vx_pressed" {
 }
 
 test "Opcode.SKP_Vx_not_pressed" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
@@ -908,7 +908,7 @@ test "Opcode.SKP_Vx_not_pressed" {
 }
 // ExA1
 test "Opcode.SKNP_Vx" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
@@ -921,7 +921,7 @@ test "Opcode.SKNP_Vx" {
 }
 // Fx07
 test "Opcode.LD_Vx_DT" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
@@ -939,7 +939,7 @@ test "Opcode.LD_Vx_DT" {
 test "Opcode.LD_Vx_K" {}
 // Fx15
 test "Opcode.LD_DT_Vx" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
@@ -955,7 +955,7 @@ test "Opcode.LD_DT_Vx" {
 }
 // Fx18
 test "Opcode.LD_ST_Vx" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
@@ -971,7 +971,7 @@ test "Opcode.LD_ST_Vx" {
 }
 // Fx1E
 test "Opcode.ADD_I_Vx" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
 
@@ -988,7 +988,7 @@ test "Opcode.ADD_I_Vx" {
 }
 // Fx29
 test "Opcode.LD_F_Vx" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
 
@@ -1004,7 +1004,7 @@ test "Opcode.LD_F_Vx" {
 }
 // Fx33
 test "Opcode.LD_B_Vx" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
 
@@ -1023,7 +1023,7 @@ test "Opcode.LD_B_Vx" {
 }
 // Fx55
 test "Opcode.LD_I_Vx" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
 
@@ -1052,7 +1052,7 @@ test "Opcode.LD_I_Vx" {
 }
 // Fx65
 test "Opcode.LD_Vx_I" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
     defer ctx.deinit();
     var chip8 = Chip8{ .ctx = &ctx };
 

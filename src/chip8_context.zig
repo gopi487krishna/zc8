@@ -67,9 +67,9 @@ pub const Chip8Context = struct {
     keypad: KeyPad = KeyPad{},
     draw_flag: bool = false,
 
-    pub fn initContext() !Chip8Context {
+    pub fn initContext(allocator: std.mem.Allocator) !Chip8Context {
         return Chip8Context{
-            .stack = std.ArrayList(u16).init(std.heap.page_allocator),
+            .stack = std.ArrayList(u16).init(allocator),
             .random_source = std.Random.DefaultPrng.init(blk: {
                 var seed: u64 = undefined;
                 try std.posix.getrandom(std.mem.asBytes(&seed));
@@ -84,7 +84,7 @@ pub const Chip8Context = struct {
 };
 
 test "Chip 8 Context Initialization" {
-    const ctx = try Chip8Context.initContext();
+    const ctx = try Chip8Context.initContext(std.testing.allocator);
 
     // Memory must be zero initialized
     for (ctx.memory) |byte| {
@@ -127,7 +127,7 @@ test "Chip 8 Context Initialization" {
 }
 
 test "KeyPad.isKeyPressed" {
-    var ctx = try Chip8Context.initContext();
+    var ctx = try Chip8Context.initContext(std.testing.allocator);
 
     ctx.keypad.pressKey(KeyPad.Key.KeyA);
 
