@@ -1,7 +1,6 @@
 const std = @import("std");
 const Chip8Context = @import("chip8_context.zig").Chip8Context;
 const KeyPad = @import("chip8_context.zig").KeyPad;
-const DisplayDriver = @import("sdl_displaydriver.zig").DisplayDriver;
 
 pub const Chip8Error = error{ RomTooLarge, InstructionNotSupported, PcOutOfBounds, StackEmpty };
 
