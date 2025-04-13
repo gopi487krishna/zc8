@@ -1,141 +1,151 @@
 const std = @import("std");
 
-// Although this function looks imperative, note that its job is to
-// declaratively construct a build graph that will be executed by an external
-// runner.
 pub fn build(b: *std.Build) void {
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Here we do not override the defaults, which
-    // means any target is allowed, and the default is native. Other options
-    // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
-    // Standard optimization options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
-    // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    // const lib = b.addStaticLibrary(.{
-    //     .name = "zc8",
-    //     // In this case the main source file is merely a path, however, in more
-    //     // complicated build scripts, this could be a generated file.
-    //     .root_source_file = b.path("src/root.zig"),
-    //     .target = target,
-    //     .optimize = optimize,
-    // });
-
-    // This declares intent for the library to be installed into the standard
-    // location when the user invokes the "install" step (the default step when
-    // running `zig build`).
-    // b.installArtifact(lib);
-
-    const exe = b.addExecutable(.{
-        .name = "zc8",
+    const app_mod = b.createModule(.{
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
+        .link_libc = target.result.os.tag == .emscripten,
     });
 
-
-    // SDL 3 dependency
+    // Add SDL3 dependency to the module 
      if (target.query.isNativeOs() and target.result.os.tag == .linux) {
         // The SDL package doesn't work for Linux yet, so we rely on system
         // packages for now.
-        exe.linkSystemLibrary("SDL3");
-        exe.linkLibC();
+        app_mod.linkSystemLibrary("SDL3", .{});
     } else {
         const sdl_dep = b.dependency("sdl", .{
             .optimize = .ReleaseFast,
             .target = target,
         });
-        exe.linkLibrary(sdl_dep.artifact("SDL3"));
+        app_mod.linkLibrary(sdl_dep.artifact("SDL3"));
     }
 
-    // const sdl_dep = b.dependency("sdl", .{
-    //      .optimize = optimize, 
-    //      .target = target,
-    //  });
-    // const sdl_lib = sdl_dep.artifact("SDL3");
-    // exe.linkLibrary(sdl_lib);
 
-    // This declares intent for the executable to be installed into the
-    // standard location when the user invokes the "install" step (the default
-    // step when running `zig build`).
-    b.installArtifact(exe);
+     const run = b.step("run", "Run the app");
 
-    // This *creates* a Run step in the build graph, to be executed when another
-    // step is evaluated that depends on it. The next line below will establish
-    // such a dependency.
-    const run_cmd = b.addRunArtifact(exe);
+    if (target.result.os.tag == .emscripten) {
+        // Build for web
+        var emscripten_system_include_path: ?std.Build.LazyPath = null;
 
-    // By making the run step depend on the install step, it will be run from the
-    // installation directory rather than directly from within the cache directory.
-    // This is not necessary, however, if the application depends on other installed
-    // files, this ensures they will be present and in the expected location.
-    run_cmd.step.dependOn(b.getInstallStep());
+        // Passing sysroot is necessary
+        if (b.sysroot) |sysroot| {
+            emscripten_system_include_path = .{ .cwd_relative = b.pathJoin(&.{sysroot, "include"})};
+        }
+        else {
+            std.log.err("'--sysroot' is required when building for emscripten", .{});
+            std.process.exit(1);
+        }
 
-    // This allows the user to pass arguments to the application in the build
-    // command itself, like this: `zig build run -- arg1 arg2 etc`
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
+        if (emscripten_system_include_path) |path| {
+            app_mod.addSystemIncludePath(path);
+        }
+
+        const app_lib = b.addLibrary(.{
+            .linkage = .static,
+            .name = "zc8",
+            .root_module = app_mod,
+        });
+
+        app_lib.want_lto = optimize != .Debug;
+
+        const run_emcc = b.addSystemCommand(&.{"emcc"});
+
+        // Pass everything
+        for (app_lib.getCompileDependencies(false)) |compile| {
+            run_emcc.addArtifactArg(compile);
+        }
+
+        std.debug.print("REACHED HERE\n", .{});
+        run_emcc.addArgs(&.{
+            "-sUSE_OFFSET_CONVERTER", // Required by Zig's '@returnAddress'
+            "-sLEGACY_RUNTIME", // Currently required by SDL
+            "-sMIN_WEBGL_VERSION=2",
+            "-sFULL_ES3", // Currently required by zigglgen
+        });
+
+        // Patch the default HTML shell to also display messages printed to stderr.
+        run_emcc.addArg("--pre-js");
+        run_emcc.addFileArg(b.addWriteFiles().add("pre.js", (
+            \\Module['printErr'] ??= Module['print'];
+            \\
+        )));
+
+        run_emcc.addArg("-o");
+        const app_html = run_emcc.addOutputFileArg("zc8.html");
+
+        b.getInstallStep().dependOn(&b.addInstallDirectory(.{
+            .source_dir = app_html.dirname(),
+            .install_dir = .{ .custom = "www" },
+            .install_subdir = "",
+        }).step);
+
+        const run_emrun = b.addSystemCommand(&.{"emrun"});
+        run_emrun.addArg(b.pathJoin(&.{ b.install_path, "www", "zc8.html" }));
+        if (b.args) |args| run_emrun.addArgs(args);
+        run_emrun.step.dependOn(b.getInstallStep());
+
+        run.dependOn(&run_emrun.step);
+
     }
+    else
+    {
+        // Desktop config
+        // Move everything here
+        app_mod.link_libc = true;
+        const app_exe = b.addExecutable(.{
+            .name = "zc8",
+            .root_module = app_mod,
+        });
+        app_exe.want_lto = optimize != .Debug;
+        b.installArtifact(app_exe);
+        const run_cmd = b.addRunArtifact(app_exe);
+        run_cmd.step.dependOn(b.getInstallStep());
+        if (b.args) |args| {
+            run_cmd.addArgs(args);
+        }
+        run.dependOn(&run_cmd.step);
 
-    // This creates a build step. It will be visible in the `zig build --help` menu,
-    // and can be selected like this: `zig build run`
-    // This will evaluate the `run` step rather than the default, which is "install".
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
-
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
-    // const lib_unit_tests = b.addTest(.{
-    //     .root_source_file = b.path("src/root.zig"),
-    //     .target = target,
-    //     .optimize = optimize,
-    // });
-
-    // const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
-    // Make the test_roms_dir available to source
-    const test_roms_dir = b.path("test_roms");
-    const build_options = b.addOptions();
-    build_options.addOptionPath("test_roms_dir", test_roms_dir);
-
-    exe.root_module.addOptions("build_options", build_options);
-
-    const exe_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    exe_unit_tests.root_module.addOptions("build_options", build_options);
-
-    // Context State Tests
-    const chip8_context_tests = b.addTest(.{
-        .root_source_file = b.path("src/chip8_context.zig"),
-        .target = target,
-        .optimize = optimize,
-        .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
-    });
-    chip8_context_tests.root_module.addOptions("build_options", build_options);
-
-    const chip8_tests = b.addTest(.{
-        .root_source_file = b.path("src/chip8.zig"),
-        .target = target,
-        .optimize = optimize,
-        .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
-    });
-    chip8_tests.root_module.addOptions("build_options", build_options);
-
-    const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
-    const run_chip8_context_tests = b.addRunArtifact(chip8_context_tests);
-    const run_chip8_tests = b.addRunArtifact(chip8_tests);
-
-    // Similar to creating the run step earlier, this exposes a `test` step to
-    // the `zig build --help` menu, providing a way for the user to request
-    // running the unit tests.
-    const test_step = b.step("test", "Run unit tests");
-    // test_step.dependOn(&run_lib_unit_tests.step);
-    test_step.dependOn(&run_exe_unit_tests.step);
-    test_step.dependOn(&run_chip8_context_tests.step);
-    test_step.dependOn(&run_chip8_tests.step);
+        const test_roms_dir = b.path("test_roms");
+        const build_options = b.addOptions();
+        build_options.addOptionPath("test_roms_dir", test_roms_dir);
+    
+        app_exe.root_module.addOptions("build_options", build_options);
+    
+        const app_unit_tests = b.addTest(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        });
+        app_unit_tests.root_module.addOptions("build_options", build_options);
+    
+        // Context State Tests
+        const chip8_context_tests = b.addTest(.{
+            .root_source_file = b.path("src/chip8_context.zig"),
+            .target = target,
+            .optimize = optimize,
+            .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
+        });
+        chip8_context_tests.root_module.addOptions("build_options", build_options);
+    
+        const chip8_tests = b.addTest(.{
+            .root_source_file = b.path("src/chip8.zig"),
+            .target = target,
+            .optimize = optimize,
+            .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
+        });
+        chip8_tests.root_module.addOptions("build_options", build_options);
+    
+        const run_app_unit_tests = b.addRunArtifact(app_unit_tests);
+        const run_chip8_context_tests = b.addRunArtifact(chip8_context_tests);
+        const run_chip8_tests = b.addRunArtifact(chip8_tests);
+    
+        const test_step = b.step("test", "Run unit tests");
+        test_step.dependOn(&run_app_unit_tests.step);
+        test_step.dependOn(&run_chip8_context_tests.step);
+        test_step.dependOn(&run_chip8_tests.step);
+    }
 }
