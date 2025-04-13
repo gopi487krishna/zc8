@@ -8,6 +8,7 @@ const c = @cImport({
 });
 const Chip8Context = @import("chip8_context.zig").Chip8Context;
 const Chip8 = @import("chip8.zig").Chip8;
+const KeyPad = @import("chip8_context.zig").KeyPad;
 const builtin = @import("builtin");
 const testing = std.testing;
 
@@ -51,6 +52,61 @@ const test_rom = [_]u8{
 pub fn clearScreen(appstate: *AppState) void {
     _ = c.SDL_SetRenderDrawColor(appstate.renderer, 0, 0, 0, 255);
     _ = c.SDL_RenderClear(appstate.renderer);
+}
+fn translateKeyCode(keycode: c.SDL_Keycode) ?KeyPad.Key {
+    switch (keycode) {
+        c.SDLK_1 => {
+            return KeyPad.Key.Key1;
+        },
+        c.SDLK_2 => {
+            return KeyPad.Key.Key2;
+        },
+        c.SDLK_3 => {
+            return KeyPad.Key.Key3;
+        },
+        c.SDLK_4 => {
+            return KeyPad.Key.KeyC;
+        },
+        c.SDLK_Q => {
+            return KeyPad.Key.Key4;
+        },
+        c.SDLK_W => {
+            return KeyPad.Key.Key5;
+        },
+        c.SDLK_E => {
+            return KeyPad.Key.Key6;
+        },
+        c.SDLK_R => {
+            return KeyPad.Key.KeyD;
+        },
+        c.SDLK_A => {
+            return KeyPad.Key.Key7;
+        },
+        c.SDLK_S => {
+            return KeyPad.Key.Key8;
+        },
+        c.SDLK_D => {
+            return KeyPad.Key.Key9;
+        },
+        c.SDLK_F => {
+            return KeyPad.Key.KeyE;
+        },
+        c.SDLK_Z => {
+            return KeyPad.Key.KeyA;
+        },
+        c.SDLK_X => {
+            return KeyPad.Key.Key0;
+        },
+        c.SDLK_C => {
+            return KeyPad.Key.KeyB;
+        },
+        c.SDLK_V => {
+            return KeyPad.Key.KeyF;
+        },
+        else => {
+            return null;
+        },
+    }
 }
 
 // pub fn main() !void {
@@ -149,7 +205,7 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     _ = c.SDL_RenderPresent(appstate.renderer);
 
     clearScreen(appstate);
-    appstate.chip8_context = try Chip8Context.initContext();
+    appstate.chip8_context = try Chip8Context.initContext(allocator);
 
     // var chip8_logo_rom_path: []const u8 = undefined;
     // if (args.next()) |path| {
@@ -177,7 +233,28 @@ fn sdlAppIterate(_: ?*anyopaque) !c.SDL_AppResult {
     return c.SDL_APP_CONTINUE;
 }
 
-fn sdlAppEvent(_: ?*anyopaque, _: *c.SDL_Event) !c.SDL_AppResult {
+fn sdlAppEvent(appstate_ptr: ?*anyopaque, event: *c.SDL_Event) !c.SDL_AppResult {
+    const appstate: *AppState = @ptrCast(@alignCast(appstate_ptr.?));
+    switch (event.type) {
+        c.SDL_EVENT_QUIT => {
+            return c.SDL_APP_SUCCESS;
+        },
+        c.SDL_EVENT_KEY_DOWN => {
+            const keycode = event.key.key;
+            const translated_keycode = translateKeyCode(keycode);
+            if (translated_keycode) |value| {
+                appstate.chip8_context.keypad.pressKey(value);
+            }
+        },
+        c.SDL_EVENT_KEY_UP => {
+            const keycode = event.key.key;
+            const translated_keycode = translateKeyCode(keycode);
+            if (translated_keycode) |value| {
+                appstate.chip8_context.keypad.releaseKey(value);
+            }
+        },
+        else => {},
+    }
     return c.SDL_APP_CONTINUE;
 }
 
