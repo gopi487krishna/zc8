@@ -8,41 +8,41 @@ pub const Chip8 = struct {
     ctx: *Chip8Context,
 
     const Opcode = enum {
-        SYS_addr,    // 0nnn
-        CLS,         // 00E0
-        RET,         // 00EE
-        JP_addr,     // 1nnn
-        CALL_addr,   // 2nnn
-        SE_Vx_byte,  // 3xkk
+        SYS_addr, // 0nnn
+        CLS, // 00E0
+        RET, // 00EE
+        JP_addr, // 1nnn
+        CALL_addr, // 2nnn
+        SE_Vx_byte, // 3xkk
         SNE_Vx_byte, // 4xkk
-        SE_Vx_Vy,    // 5xy0
-        LD_Vx_byte,  // 6xkk
+        SE_Vx_Vy, // 5xy0
+        LD_Vx_byte, // 6xkk
         ADD_Vx_byte, // 7xkk
-        LD_Vx_Vy,    // 8xy0
-        OR_Vx_Vy,    // 8xy1
-        AND_Vx_Vy,   // 8xy2
-        XOR_Vx_Vy,   // 8xy3
-        ADD_Vx_Vy,   // 8xy4
-        SUB_Vx_Vy,   // 8xy5
-        SHR_Vx_Vy,   // 8xy6
-        SUBN_Vx_Vy,  // 8xy7
-        SHL_Vx_Vy,   // 8xyE
-        SNE_Vx_Vy,   // 9xy0
-        LD_I_addr,   // Annn
-        JP_V0_addr,  // Bnnn
+        LD_Vx_Vy, // 8xy0
+        OR_Vx_Vy, // 8xy1
+        AND_Vx_Vy, // 8xy2
+        XOR_Vx_Vy, // 8xy3
+        ADD_Vx_Vy, // 8xy4
+        SUB_Vx_Vy, // 8xy5
+        SHR_Vx_Vy, // 8xy6
+        SUBN_Vx_Vy, // 8xy7
+        SHL_Vx_Vy, // 8xyE
+        SNE_Vx_Vy, // 9xy0
+        LD_I_addr, // Annn
+        JP_V0_addr, // Bnnn
         RND_Vx_byte, // Cxkk
         DRW_Vx_Vy_n, // Dxyn
-        SKP_Vx,      // Ex9E
-        SKNP_Vx,     // ExA1
-        LD_Vx_DT,    // Fx07
-        LD_Vx_K,     // Fx0A
-        LD_DT_Vx,    // Fx15
-        LD_ST_Vx,    // Fx18
-        ADD_I_Vx,    // Fx1E
-        LD_F_Vx,     // Fx29
-        LD_B_Vx,     // Fx33
-        LD_I_Vx,     // Fx55
-        LD_Vx_I,     // Fx65
+        SKP_Vx, // Ex9E
+        SKNP_Vx, // ExA1
+        LD_Vx_DT, // Fx07
+        LD_Vx_K, // Fx0A
+        LD_DT_Vx, // Fx15
+        LD_ST_Vx, // Fx18
+        ADD_I_Vx, // Fx1E
+        LD_F_Vx, // Fx29
+        LD_B_Vx, // Fx33
+        LD_I_Vx, // Fx55
+        LD_Vx_I, // Fx65
         UNIMPLEMENTED,
     };
 
@@ -55,7 +55,7 @@ pub const Chip8 = struct {
         const n: u4 = @intCast(instruction & 0x000F);
         const opcode = switch ((instruction & 0xF000) >> 12) {
             0x0 => switch (instruction & 0x00FF) {
-            0x00E0 => Opcode.CLS,
+                0x00E0 => Opcode.CLS,
                 0x00EE => Opcode.RET,
                 else => Opcode.SYS_addr,
             },
@@ -121,18 +121,20 @@ pub const Chip8 = struct {
 
         self.ctx.pc += 2;
 
-
         switch (opcode) {
-            .SYS_addr => {unreachable;},
-            .CLS => {self.clear_display();},
+            .SYS_addr => {
+                unreachable;
+            },
+            .CLS => {
+                self.clear_display();
+            },
             .RET => {
                 if (self.ctx.stack.items.len == 0) {
                     return Chip8Error.StackEmpty;
-                }
-                else {
+                } else {
                     self.ctx.pc = self.ctx.stack.pop().?;
                 }
-             },
+            },
             .JP_addr => self.ctx.pc = nnn,
             .CALL_addr => {
                 try self.ctx.stack.append(self.ctx.pc);
@@ -170,13 +172,13 @@ pub const Chip8 = struct {
                 const result = @addWithOverflow(self.ctx.v[Vx], self.ctx.v[Vy]);
                 self.ctx.v[Vx] = result[0];
                 self.ctx.v[0xF] = result[1];
-             },
+            },
             .SUB_Vx_Vy => {
                 const result = @subWithOverflow(self.ctx.v[Vx], self.ctx.v[Vy]);
                 self.ctx.v[Vx] = result[0];
-                const borrow : u8 = ~result[1];
+                const borrow: u8 = ~result[1];
                 self.ctx.v[0xF] = borrow;
-             },
+            },
             .SHR_Vx_Vy => {
                 self.ctx.v[0xF] = self.ctx.v[Vy] & 1;
                 self.ctx.v[Vx] = self.ctx.v[Vy] >> 1;
@@ -184,7 +186,7 @@ pub const Chip8 = struct {
             .SUBN_Vx_Vy => {
                 const result = @subWithOverflow(self.ctx.v[Vy], self.ctx.v[Vx]);
                 self.ctx.v[Vx] = result[0];
-                const borrow : u8 = ~result[1];
+                const borrow: u8 = ~result[1];
                 self.ctx.v[0xF] = borrow;
             },
             .SHL_Vx_Vy => {
@@ -224,10 +226,10 @@ pub const Chip8 = struct {
                     for (0..8) |pix_usize| {
                         const pixel: u3 = @intCast(pix_usize);
                         const bitpos: u3 = 7 - pixel;
-                        const mask = @as(u8,1) << bitpos;
+                        const mask = @as(u8, 1) << bitpos;
                         const sprite_pixel_set = data & mask;
                         const pos = ((y + row) * 64) + (x + pixel);
-                        if (pos >= 64*32) {
+                        if (pos >= 64 * 32) {
                             continue;
                         }
                         if (sprite_pixel_set != 0) {
@@ -272,23 +274,22 @@ pub const Chip8 = struct {
             },
             .LD_F_Vx => {
                 const Vx_val = self.ctx.v[Vx];
-                const Vx_nibble:u4 = @intCast(Vx_val & 0x0F);
-                self.ctx.i = (0x0 + @as(u16,Vx_nibble) * 5);
+                const Vx_nibble: u4 = @intCast(Vx_val & 0x0F);
+                self.ctx.i = (0x0 + @as(u16, Vx_nibble) * 5);
             },
             .LD_B_Vx => {
                 const Vx_val = self.ctx.v[Vx];
                 const i = self.ctx.i;
-                self.ctx.memory[i] = (Vx_val/100) % 10 ;
-                self.ctx.memory[i+1] = (Vx_val/10) % 10 ;
-                self.ctx.memory[i+2] = Vx_val % 10 ;
+                self.ctx.memory[i] = (Vx_val / 100) % 10;
+                self.ctx.memory[i + 1] = (Vx_val / 10) % 10;
+                self.ctx.memory[i + 2] = Vx_val % 10;
             },
             .LD_I_Vx => {
-                @memcpy(self.ctx.memory[self.ctx.i.. self.ctx.i + Vx + 1], self.ctx.v[0..Vx + 1]);
+                @memcpy(self.ctx.memory[self.ctx.i .. self.ctx.i + Vx + 1], self.ctx.v[0 .. Vx + 1]);
                 self.ctx.i = self.ctx.i + Vx + 1;
-
             },
             .LD_Vx_I => {
-                @memcpy( self.ctx.v[0..Vx + 1], self.ctx.memory[self.ctx.i.. self.ctx.i + Vx + 1]);
+                @memcpy(self.ctx.v[0 .. Vx + 1], self.ctx.memory[self.ctx.i .. self.ctx.i + Vx + 1]);
                 self.ctx.i = self.ctx.i + Vx + 1;
             },
             .UNIMPLEMENTED => return Chip8Error.InstructionNotSupported,
@@ -302,7 +303,7 @@ pub const Chip8 = struct {
     pub fn loadRomFromArray(self: *Chip8, rom: []const u8) !void {
         if (rom.len > self.ctx.memory[0x200..].len) return Chip8Error.RomTooLarge;
         @memcpy(self.ctx.memory[0x200 .. 0x200 + rom.len], rom);
-        self.ctx.rom_length=  rom.len;
+        self.ctx.rom_length = rom.len;
     }
 
     pub fn loadRomFromFile(self: *Chip8, allocator: std.mem.Allocator, absolute_path: []const u8) !void {
@@ -389,23 +390,20 @@ test "Chip8.loadFont" {
     try std.testing.expectEqualSlices(u8, font_sprites[0..], ctx.memory[0x00..0x50]);
 }
 
-
-fn createInstruction(opcode_prefix:u8, x:u8, y:u8, opcode_suffix:u8) [2]u8 {
+fn createInstruction(opcode_prefix: u8, x: u8, y: u8, opcode_suffix: u8) [2]u8 {
     const top_byte = (opcode_prefix << 4) | x;
     const bottom_byte = (y << 4) | opcode_suffix;
-    return [_]u8{top_byte, bottom_byte};
+    return [_]u8{ top_byte, bottom_byte };
 }
 
 // 0nnn
-test "Opcode.SYS_addr" {
-}
+test "Opcode.SYS_addr" {}
 // 00E0
-test "Opcode.CLS" {
-}
+test "Opcode.CLS" {}
 // 00EE
 test "Opcode.RET" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     try ctx.stack.append(0x238);
 
     const rom_data = createInstruction(0x0, 0x0, 0xE, 0xE);
@@ -417,7 +415,7 @@ test "Opcode.RET" {
 // 1nnn
 test "Opcode.JP_addr" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 {.ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const rom_data = createInstruction(0x1, 0x2, 0x3, 0x8);
     try chip8.loadRomFromArray(rom_data[0..]);
@@ -428,7 +426,7 @@ test "Opcode.JP_addr" {
 // 2nnn
 test "Opcode.CALL_addr" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 {.ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const rom_data = createInstruction(0x2, 0x2, 0x3, 0x8);
     try chip8.loadRomFromArray(rom_data[0..]);
@@ -436,13 +434,13 @@ test "Opcode.CALL_addr" {
 
     try std.testing.expectEqual(0x238, ctx.pc);
 
-    const return_address=  ctx.stack.pop().?;
+    const return_address = ctx.stack.pop().?;
     try std.testing.expectEqual(0x202, return_address);
 }
 // 3xkk
 test "Opcode.SE_Vx_byte_ne" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 {.ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
 
@@ -455,7 +453,7 @@ test "Opcode.SE_Vx_byte_ne" {
 
 test "Opcode.SE_Vx_byte_eq" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 {.ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
     ctx.v[Vx] = 0x12;
@@ -469,7 +467,7 @@ test "Opcode.SE_Vx_byte_eq" {
 // 4xkk
 test "Opcode.SNE_Vx_byte_ne" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 {.ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
 
@@ -482,10 +480,10 @@ test "Opcode.SNE_Vx_byte_ne" {
 
 test "Opcode.SNE_Vx_byte_eq" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 {.ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
-    
+
     ctx.v[Vx] = 0x12;
 
     const rom_data = createInstruction(0x4, Vx, 0x1, 0x2);
@@ -497,7 +495,7 @@ test "Opcode.SNE_Vx_byte_eq" {
 // 5xy0
 test "Opcode.SE_Vx_Vy_eq" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 {.ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
     const Vy = 1;
@@ -514,7 +512,7 @@ test "Opcode.SE_Vx_Vy_eq" {
 
 test "Opcode.SE_Vx_Vy_ne" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 {.ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
     const Vy = 1;
@@ -526,12 +524,11 @@ test "Opcode.SE_Vx_Vy_ne" {
     try chip8.execute();
 
     try std.testing.expectEqual(0x202, ctx.pc);
-
 }
 // 6xkk
 test "Opcode.LD_Vx_byte" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 8;
     const rom_data = createInstruction(0x6, Vx, 0x3, 0x4);
     try chip8.loadRomFromArray(rom_data[0..]);
@@ -541,7 +538,7 @@ test "Opcode.LD_Vx_byte" {
 // 7xkk
 test "Opcode.ADD_Vx_byte" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
 
     ctx.v[Vx] = 0x5;
@@ -549,12 +546,11 @@ test "Opcode.ADD_Vx_byte" {
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
     try std.testing.expectEqual(0x39, ctx.v[0]);
-
 }
 // 8xy0
 test "Opcode.LD_Vx_Vy" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 3;
     ctx.v[Vy] = 0x5;
@@ -562,12 +558,11 @@ test "Opcode.LD_Vx_Vy" {
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
     try std.testing.expectEqual(0x5, ctx.v[Vx]);
-
 }
 // 8xy1
 test "Opcode.OR_Vx_Vy" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     ctx.v[Vx] = 0x4;
@@ -581,7 +576,7 @@ test "Opcode.OR_Vx_Vy" {
 // 8xy2
 test "Opcode.AND_Vx_Vy" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     ctx.v[Vx] = 0x4;
@@ -591,12 +586,11 @@ test "Opcode.AND_Vx_Vy" {
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
     try std.testing.expectEqual(0x0, ctx.v[Vx]);
-
 }
 // 8xy3
 test "Opcode.XOR_Vx_Vy" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     ctx.v[Vx] = 0x7;
@@ -610,7 +604,7 @@ test "Opcode.XOR_Vx_Vy" {
 // 8xy4
 test "Opcode.ADD_Vx_Vy_nocarry" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     ctx.v[Vx] = 0x7;
@@ -620,11 +614,10 @@ test "Opcode.ADD_Vx_Vy_nocarry" {
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
     try std.testing.expectEqual(0xE, ctx.v[Vx]);
-
 }
 test "Opcode.ADD_Vx_Vy_carry" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     const Vf = 0xF;
@@ -636,12 +629,11 @@ test "Opcode.ADD_Vx_Vy_carry" {
     try chip8.execute();
     try std.testing.expectEqual(0x0, ctx.v[Vx]);
     try std.testing.expectEqual(0x1, ctx.v[Vf]);
-
 }
 // 8xy5
 test "Opcode.SUB_Vx_Vy_nooverflow" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     const Vf = 0xF;
@@ -653,12 +645,11 @@ test "Opcode.SUB_Vx_Vy_nooverflow" {
     try chip8.execute();
     try std.testing.expectEqual(0x1, ctx.v[Vx]);
     try std.testing.expectEqual(0x1, ctx.v[Vf]);
-
 }
 
 test "Opcode.SUB_Vx_Vy_overflow" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     const Vf = 0xF;
@@ -670,13 +661,12 @@ test "Opcode.SUB_Vx_Vy_overflow" {
     try chip8.execute();
     try std.testing.expectEqual(0xFF, ctx.v[Vx]);
     try std.testing.expectEqual(0x0, ctx.v[Vf]);
-
 }
 
 // 8xy6
 test "Opcode.SHR_Vx_Vy" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     const Vf = 0xF;
@@ -687,12 +677,11 @@ test "Opcode.SHR_Vx_Vy" {
     try chip8.execute();
     try std.testing.expectEqual(0x2, ctx.v[Vx]);
     try std.testing.expectEqual(0x0, ctx.v[Vf]);
-
 }
 // 8xy7
 test "Opcode.SUBN_Vx_Vy_borrow" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     const Vf = 0xF;
@@ -704,12 +693,11 @@ test "Opcode.SUBN_Vx_Vy_borrow" {
     try chip8.execute();
     try std.testing.expectEqual(0xFF, ctx.v[Vx]);
     try std.testing.expectEqual(0x0, ctx.v[Vf]);
-
 }
 // 8xyE
 test "Opcode.SHL_Vx_Vy" {
     var ctx = try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
     const Vf = 0xF;
@@ -720,19 +708,16 @@ test "Opcode.SHL_Vx_Vy" {
     try chip8.execute();
     try std.testing.expectEqual(0x8, ctx.v[Vx]);
     try std.testing.expectEqual(0x0, ctx.v[Vf]);
-
-
 }
 // 9xy0
 test "Opcode.SNE_Vx_Vy_true" {
-    var ctx =try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var ctx = try Chip8Context.initContext();
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
 
     ctx.v[Vx] = 2;
     ctx.v[Vy] = 2;
-
 
     const @"9xy0_instruction" = createInstruction(0x9, Vx, Vy, 0x0);
     const add_instruction = createInstruction(0x8, Vx, Vy, 0x4);
@@ -748,14 +733,13 @@ test "Opcode.SNE_Vx_Vy_true" {
 }
 
 test "Opcode.SNE_Vx_Vy_false" {
-    var ctx =try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var ctx = try Chip8Context.initContext();
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     const Vy = 1;
 
     ctx.v[Vx] = 2;
     ctx.v[Vy] = 3;
-
 
     const @"9xy0_instruction" = createInstruction(0x9, Vx, Vy, 0x0);
     const add_instruction = createInstruction(0x8, Vx, Vy, 0x4);
@@ -771,8 +755,8 @@ test "Opcode.SNE_Vx_Vy_false" {
 }
 // Annn
 test "Opcode.LD_I_addr" {
-    var ctx =try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var ctx = try Chip8Context.initContext();
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const rom_data = createInstruction(0xA, 0x2, 0x3, 0x8);
 
@@ -785,9 +769,9 @@ test "Opcode.LD_I_addr" {
 }
 // Bnnn
 test "Opcode.JP_V0_addr" {
-    var ctx =try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx};
-    
+    var ctx = try Chip8Context.initContext();
+    var chip8 = Chip8{ .ctx = &ctx };
+
     ctx.v[0] = 0x1;
 
     const rom_data = createInstruction(0xB, 0x2, 0x3, 0x8);
@@ -801,9 +785,9 @@ test "Opcode.JP_V0_addr" {
 }
 // Cxkk
 test "Opcode.RND_Vx_byte" {
-    var ctx =try Chip8Context.initContext();
-    var chip8 = Chip8 { .ctx = &ctx};
-    
+    var ctx = try Chip8Context.initContext();
+    var chip8 = Chip8{ .ctx = &ctx };
+
     const Vx = 0;
 
     ctx.random_source = std.Random.DefaultPrng.init(42);
@@ -824,23 +808,22 @@ test "Opcode.RND_Vx_byte" {
     try chip8.execute();
 
     try std.testing.expectEqual(random_value, ctx.v[Vx]);
-
 }
 // Dxyn
 test "Opcode.DRW_Vx_Vy_n" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
     const Vy = 1;
     const n = 5; // Height of sprite
-    
+
     ctx.v[Vx] = 10;
     ctx.v[Vy] = 10;
-    
+
     ctx.i = 0x300;
-    
+
     // Draw a vertical line
     ctx.memory[0x300] = 0x80;
     ctx.memory[0x301] = 0x80;
@@ -853,29 +836,28 @@ test "Opcode.DRW_Vx_Vy_n" {
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
 
-    try std.testing.expectEqual(0x1,ctx.frame_buffer[10*64 + 10]);
-    try std.testing.expectEqual(0x1,ctx.frame_buffer[11*64 + 10]); 
-    try std.testing.expectEqual(0x1,ctx.frame_buffer[12*64 + 10]); 
-    try std.testing.expectEqual(0x1,ctx.frame_buffer[13*64 + 10]); 
-    try std.testing.expectEqual(0x1,ctx.frame_buffer[14*64 + 10]); 
-
+    try std.testing.expectEqual(0x1, ctx.frame_buffer[10 * 64 + 10]);
+    try std.testing.expectEqual(0x1, ctx.frame_buffer[11 * 64 + 10]);
+    try std.testing.expectEqual(0x1, ctx.frame_buffer[12 * 64 + 10]);
+    try std.testing.expectEqual(0x1, ctx.frame_buffer[13 * 64 + 10]);
+    try std.testing.expectEqual(0x1, ctx.frame_buffer[14 * 64 + 10]);
 }
 
 // Dxyn with collision
 test "Opcode.DRW_Vx_Vy_n_collision" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
 
-    const Vx= 0;
-    const Vy= 1;
-    const n1= 5; // Height of sprite
-    
+    const Vx = 0;
+    const Vy = 1;
+    const n1 = 5; // Height of sprite
+
     ctx.v[Vx] = 10;
     ctx.v[Vy] = 10;
-    
+
     ctx.i = 0x300;
-    
+
     // Draw a vertical line
     ctx.memory[0x300] = 0x80;
     ctx.memory[0x301] = 0x80;
@@ -884,7 +866,7 @@ test "Opcode.DRW_Vx_Vy_n_collision" {
     ctx.memory[0x304] = 0x80;
 
     // Draw a horizontal line intersecting the vertical line
-    const n2= 1; // Height of sprite
+    const n2 = 1; // Height of sprite
     ctx.memory[0x305] = 0xFF;
 
     const inst1 = createInstruction(0xD, Vx, Vy, n1);
@@ -898,13 +880,12 @@ test "Opcode.DRW_Vx_Vy_n_collision" {
     try std.testing.expectEqual(0x0, ctx.v[0xF]);
     try chip8.execute();
     try std.testing.expectEqual(0x1, ctx.v[0xF]);
-
 }
 // Ex9E
 test "Opcode.SKP_Vx_pressed" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     ctx.v[Vx] = 0xA;
     ctx.keypad.pressKey(KeyPad.Key.KeyA);
@@ -917,7 +898,7 @@ test "Opcode.SKP_Vx_pressed" {
 test "Opcode.SKP_Vx_not_pressed" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     ctx.v[Vx] = 0xA;
     const rom_data = createInstruction(0xE, Vx, 0x9, 0xE);
@@ -929,7 +910,7 @@ test "Opcode.SKP_Vx_not_pressed" {
 test "Opcode.SKNP_Vx" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
     ctx.v[Vx] = 0xA;
     ctx.keypad.pressKey(KeyPad.Key.KeyB);
@@ -937,17 +918,16 @@ test "Opcode.SKNP_Vx" {
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
     try std.testing.expectEqual(0x204, ctx.pc);
-
 }
 // Fx07
 test "Opcode.LD_Vx_DT" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
 
     const delay_timer_val = 12;
-    ctx.delay_timer=  delay_timer_val;
+    ctx.delay_timer = delay_timer_val;
 
     const rom_data = createInstruction(0xF, Vx, 0x0, 0x7);
     try chip8.loadRomFromArray(rom_data[0..]);
@@ -956,36 +936,32 @@ test "Opcode.LD_Vx_DT" {
     try std.testing.expectEqual(delay_timer_val, ctx.v[Vx]);
 }
 // Fx0A
-test "Opcode.LD_Vx_K" {
-}
+test "Opcode.LD_Vx_K" {}
 // Fx15
 test "Opcode.LD_DT_Vx" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
 
     const delay_timer_val = 12;
     ctx.v[Vx] = delay_timer_val;
-
 
     const rom_data = createInstruction(0xF, Vx, 0x1, 0x5);
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
 
     try std.testing.expectEqual(delay_timer_val, ctx.delay_timer);
-
 }
 // Fx18
 test "Opcode.LD_ST_Vx" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
     const Vx = 0;
 
     const sound_timer_val = 12;
     ctx.v[Vx] = sound_timer_val;
-
 
     const rom_data = createInstruction(0xF, Vx, 0x1, 0x8);
     try chip8.loadRomFromArray(rom_data[0..]);
@@ -997,26 +973,24 @@ test "Opcode.LD_ST_Vx" {
 test "Opcode.ADD_I_Vx" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx};
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
 
     ctx.i = 0x2;
     ctx.v[Vx] = 0x2;
 
-
     const rom_data = createInstruction(0xF, Vx, 0x1, 0xE);
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
 
     try std.testing.expectEqual(0x4, ctx.i);
-
 }
 // Fx29
 test "Opcode.LD_F_Vx" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
 
     const Vx = 0;
     ctx.v[Vx] = 0xD;
@@ -1032,14 +1006,13 @@ test "Opcode.LD_F_Vx" {
 test "Opcode.LD_B_Vx" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
 
-    const Vx  = 0x0;
+    const Vx = 0x0;
     ctx.v[Vx] = 254;
 
     const rom_data = createInstruction(0xF, Vx, 0x3, 0x3);
     ctx.i = 0x210;
-
 
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
@@ -1052,9 +1025,9 @@ test "Opcode.LD_B_Vx" {
 test "Opcode.LD_I_Vx" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
 
-    const Vx  = 0x5;
+    const Vx = 0x5;
 
     ctx.v[0] = 0x0;
     ctx.v[1] = 0x1;
@@ -1070,23 +1043,20 @@ test "Opcode.LD_I_Vx" {
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
 
-
     try std.testing.expectEqual(0x0, ctx.memory[0x210]);
     try std.testing.expectEqual(0x1, ctx.memory[0x211]);
     try std.testing.expectEqual(0x2, ctx.memory[0x212]);
     try std.testing.expectEqual(0x3, ctx.memory[0x213]);
     try std.testing.expectEqual(0x4, ctx.memory[0x214]);
     try std.testing.expectEqual(0x5, ctx.memory[0x215]);
-
-
 }
 // Fx65
 test "Opcode.LD_Vx_I" {
     var ctx = try Chip8Context.initContext();
     defer ctx.deinit();
-    var chip8 = Chip8 { .ctx = &ctx };
+    var chip8 = Chip8{ .ctx = &ctx };
 
-    const Vx  = 0x5;
+    const Vx = 0x5;
 
     ctx.i = 0x210;
     ctx.memory[0x210] = 0x0;
@@ -1101,18 +1071,12 @@ test "Opcode.LD_Vx_I" {
     try chip8.loadRomFromArray(rom_data[0..]);
     try chip8.execute();
 
-
     try std.testing.expectEqual(0x0, ctx.v[0x0]);
     try std.testing.expectEqual(0x1, ctx.v[0x1]);
     try std.testing.expectEqual(0x2, ctx.v[0x2]);
     try std.testing.expectEqual(0x3, ctx.v[0x3]);
     try std.testing.expectEqual(0x4, ctx.v[0x4]);
     try std.testing.expectEqual(0x5, ctx.v[0x5]);
-
-
-
-
 }
 // UNIMPLEMENTED
-test "Opcode.UNIMPLEMENTED" {
-}
+test "Opcode.UNIMPLEMENTED" {}
