@@ -1,0 +1,13 @@
+
+body {
+  background-color: black;
+  background-image: url('assets/background_stars.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  display: flex;
+  justify-content: center;
+  margin: 0; 
+  padding: 0;
+  min-height: 100vh; /* Full viewport height */
+}
