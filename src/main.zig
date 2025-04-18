@@ -34,7 +34,7 @@ const AppState = struct {
     height: c_int = 32,
     window: ?*c.SDL_Window = undefined,
     renderer: ?*c.SDL_Renderer = undefined,
-    scale: c_int = 20,
+    scale: c_int = 10,
     paused: bool = false,
     cycle_delay: i64 = 16,
     last_cycle_time: i64 = 0,
@@ -232,7 +232,6 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
         .allocator = allocator,
         .last_cycle_time = std.time.milliTimestamp(),
     };
-
     try errify(c.SDL_Init(c.SDL_INIT_VIDEO | c.SDL_INIT_AUDIO));
     appstate.window = try errify(c.SDL_CreateWindow("zc8", appstate.width * appstate.scale, appstate.height * appstate.scale, c.SDL_WINDOW_UTILITY));
     appstate.renderer = try errify(c.SDL_CreateRenderer(appstate.window, null));
