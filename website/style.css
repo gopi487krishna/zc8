@@ -95,6 +95,12 @@ body {
     position: relative; /* Ensure z-index stacking context */
 }
 
+
+#canvas {
+  border-radius: 10px; /* make corners round */
+}
+
+
 /* GitHub Corner styles */
 .github-corner:hover .octo-arm {
     animation: octocat-wave 560ms ease-in-out;
@@ -169,6 +175,7 @@ body {
     transform: rotate(-45deg); /* Default rotation */
     max-width: 130px; /* Constrain width */
     text-align: center;
+    animation: flash 2.5s infinite step-end; /* name duration iteration-count timing-function */
 }
 
 .game-circle.bottom-left {
