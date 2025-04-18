@@ -28,6 +28,8 @@ const AppState = struct {
     window: ?*c.SDL_Window,
     renderer: ?*c.SDL_Renderer,
     scale: c_int,
+    time_accumulated: i64 = 0,
+    target_frame_time: i64 = 1_000_000 / 60, // 60Hz
 };
 
 const test_rom = [_]u8{
@@ -106,6 +108,27 @@ fn translateKeyCode(keycode: c.SDL_Keycode) ?KeyPad.Key {
         else => {
             return null;
         },
+    }
+}
+
+pub fn render(appstate: *AppState) !void {
+    _ = c.SDL_SetRenderDrawColor(appstate.renderer, 0, 255, 0, 255);
+    for (0..32) |y_usize| {
+        for (0..64) |x_usize| {
+            const pixel_pos = y_usize * 64 + x_usize;
+            if (appstate.chip8_context.frame_buffer[pixel_pos] == 1) {
+                // Draw the rectangle on the screen
+                const x: c_int = @intCast(x_usize);
+                const y: c_int = @intCast(y_usize);
+                const rect = c.SDL_FRect{ .x = @floatFromInt(x * appstate.scale), .y = @floatFromInt(y * appstate.scale), .w = @floatFromInt(appstate.scale), .h = @floatFromInt(appstate.scale) };
+                _ = c.SDL_RenderFillRect(appstate.renderer, &rect);
+            }
+        }
+    }
+
+    if (!c.SDL_RenderPresent(appstate.renderer)) {
+        c.SDL_Log("SDL_RenderPresent Failed: %s", c.SDL_GetError());
+        return error.SDLRenderPresentFailed;
     }
 }
 
@@ -194,7 +217,7 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     const allocator = std.heap.page_allocator;
     const appstate = try allocator.create(AppState);
     appstate.allocator = allocator;
-    appstate.scale = 10;
+    appstate.scale = 20;
     appstate.width = 64;
     appstate.height = 32;
 
@@ -204,7 +227,6 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     _ = c.SDL_UpdateWindowSurface(appstate.window);
     _ = c.SDL_RenderPresent(appstate.renderer);
 
-    clearScreen(appstate);
     appstate.chip8_context = try Chip8Context.initContext(allocator);
 
     // var chip8_logo_rom_path: []const u8 = undefined;
@@ -229,7 +251,31 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     return c.SDL_APP_CONTINUE;
 }
 
-fn sdlAppIterate(_: ?*anyopaque) !c.SDL_AppResult {
+fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
+    const appstate: *AppState = @ptrCast(@alignCast(appstate_ptr.?));
+    var start_time: i64 = 0;
+    var end_time: i64 = 0;
+    start_time = std.time.microTimestamp();
+    if (appstate.time_accumulated > appstate.target_frame_time) {
+        clearScreen(appstate);
+        var cycles: u8 = 3;
+        while (cycles != 0) {
+            try appstate.chip8.execute();
+            cycles -= 1;
+        }
+
+        if (appstate.chip8_context.draw_flag) {
+            try render(appstate);
+            appstate.chip8_context.draw_flag = false;
+        }
+        appstate.chip8_context.delay_timer = if (appstate.chip8_context.delay_timer == 0) 0 else appstate.chip8_context.delay_timer - 1;
+        appstate.chip8_context.sound_timer = if (appstate.chip8_context.sound_timer == 0) 0 else appstate.chip8_context.sound_timer - 1;
+        appstate.time_accumulated = 0;
+    }
+    end_time = std.time.microTimestamp();
+    const delta_time = end_time - start_time;
+    appstate.time_accumulated += delta_time;
+    // c.SDL_Delay(1);
     return c.SDL_APP_CONTINUE;
 }
 
