@@ -11,8 +11,8 @@ pub fn build(b: *std.Build) void {
         .link_libc = target.result.os.tag == .emscripten,
     });
 
-    // Add SDL3 dependency to the module 
-     if (target.query.isNativeOs() and target.result.os.tag == .linux) {
+    // Add SDL3 dependency to the module
+    if (target.query.isNativeOs() and target.result.os.tag == .linux) {
         // The SDL package doesn't work for Linux yet, so we rely on system
         // packages for now.
         app_mod.linkSystemLibrary("SDL3", .{});
@@ -24,8 +24,7 @@ pub fn build(b: *std.Build) void {
         app_mod.linkLibrary(sdl_dep.artifact("SDL3"));
     }
 
-
-     const run = b.step("run", "Run the app");
+    const run = b.step("run", "Run the app");
 
     if (target.result.os.tag == .emscripten) {
         // Build for web
@@ -33,9 +32,8 @@ pub fn build(b: *std.Build) void {
 
         // Passing sysroot is necessary
         if (b.sysroot) |sysroot| {
-            emscripten_system_include_path = .{ .cwd_relative = b.pathJoin(&.{sysroot, "include"})};
-        }
-        else {
+            emscripten_system_include_path = .{ .cwd_relative = b.pathJoin(&.{ sysroot, "include" }) };
+        } else {
             std.log.err("'--sysroot' is required when building for emscripten", .{});
             std.process.exit(1);
         }
@@ -88,10 +86,7 @@ pub fn build(b: *std.Build) void {
         run_emrun.step.dependOn(b.getInstallStep());
 
         run.dependOn(&run_emrun.step);
-
-    }
-    else
-    {
+    } else {
         // Desktop config
         // Move everything here
         app_mod.link_libc = true;
@@ -111,16 +106,16 @@ pub fn build(b: *std.Build) void {
         const test_roms_dir = b.path("test_roms");
         const build_options = b.addOptions();
         build_options.addOptionPath("test_roms_dir", test_roms_dir);
-    
+
         app_exe.root_module.addOptions("build_options", build_options);
-    
+
         const app_unit_tests = b.addTest(.{
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
         });
         app_unit_tests.root_module.addOptions("build_options", build_options);
-    
+
         // Context State Tests
         const chip8_context_tests = b.addTest(.{
             .root_source_file = b.path("src/chip8_context.zig"),
@@ -129,7 +124,7 @@ pub fn build(b: *std.Build) void {
             .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
         });
         chip8_context_tests.root_module.addOptions("build_options", build_options);
-    
+
         const chip8_tests = b.addTest(.{
             .root_source_file = b.path("src/chip8.zig"),
             .target = target,
@@ -137,11 +132,11 @@ pub fn build(b: *std.Build) void {
             .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
         });
         chip8_tests.root_module.addOptions("build_options", build_options);
-    
+
         const run_app_unit_tests = b.addRunArtifact(app_unit_tests);
         const run_chip8_context_tests = b.addRunArtifact(chip8_context_tests);
         const run_chip8_tests = b.addRunArtifact(chip8_tests);
-    
+
         const test_step = b.step("test", "Run unit tests");
         test_step.dependOn(&run_app_unit_tests.step);
         test_step.dependOn(&run_chip8_context_tests.step);
