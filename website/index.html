@@ -29,13 +29,13 @@
 
 
     <!-- Game Selection Circles -->
-    <div class="game-circle top-left">
+    <div class="game-circle top-left" id="spaceinvaders">
         <span class="game-name">SPACE INVADERS</span>
     </div>
-    <div class="game-circle bottom-left">
+    <div class="game-circle bottom-left" id="pong">
         <span class="game-name">PONG</span>
     </div>
-    <div class="game-circle bottom-right">
+    <div class="game-circle bottom-right" id="breakout">
         <span class="game-name">BREAKOUT</span> <!-- Updated game name -->
     </div>
 
@@ -43,7 +43,28 @@
     <!-- Zig code can access this canvas element --> 
     <script type='text/javascript'>
         var Module = {
-            canvas: (function() { return document.getElementById('canvas'); })()
+            canvas: (function() { return document.getElementById('canvas'); })(),
+            onRuntimeInitialized: function() {
+              window.load_pong = Module.cwrap('load_pong', 'void', 'void');
+              window.load_breakout = Module.cwrap('load_breakout', 'void', 'void');
+              window.load_spaceinvaders = Module.cwrap('load_spaceinvaders', 'void', 'void');
+
+              document.getElementById('pong').onclick = () => {
+                load_pong();
+              };
+
+              document.getElementById('breakout').onclick = () => {
+                load_breakout();
+              };
+
+              document.getElementById('spaceinvaders').onclick = () => {
+                load_spaceinvaders();
+              };
+
+
+
+
+            }
         };
     </script>
     
