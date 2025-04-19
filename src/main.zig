@@ -12,6 +12,11 @@ const KeyPad = @import("chip8_context.zig").KeyPad;
 const builtin = @import("builtin");
 const testing = std.testing;
 
+// Preloaded Games
+const pong = @embedFile("assets/pong.ch8");
+const breakout = @embedFile("assets/breakout.ch8");
+const space_invaders = @embedFile("assets/space_invaders.ch8");
+
 // Not sure yet as to why we need to do this.
 pub const os = if (builtin.os.tag != .emscripten and builtin.os.tag != .wasi) std.os else struct {
     pub const heap = struct {
@@ -249,7 +254,7 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     // }
 
     appstate.chip8 = Chip8{ .ctx = &appstate.chip8_context };
-    try appstate.chip8.loadRomFromArray(&test_rom);
+    try appstate.chip8.loadRomFromArray(pong);
     // try chip8.loadRomFromFile(std.heap.page_allocator, chip8_logo_rom_path);
     appstate.chip8.loadFont();
 
@@ -268,7 +273,7 @@ fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
 
     if (appstate.requires_reset) {
         appstate.reset();
-        try appstate.chip8.loadRomFromArray(&test_rom);
+        try appstate.chip8.loadRomFromArray(breakout);
         appstate.chip8.loadFont();
         return c.SDL_APP_CONTINUE;
     }
