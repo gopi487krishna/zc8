@@ -33,16 +33,16 @@ const AppState = struct {
     window: ?*c.SDL_Window,
     renderer: ?*c.SDL_Renderer,
     scale: c_int,
-    time_accumulated: i64 = 0,
     paused: bool = false,
-    target_frame_time: i64 = 1_000_000 / 60, // 60Hz
+    cycle_delay: i64 = 0,
+    last_cycle_time: i64 = 0,
     requires_reset: bool = false,
 
     pub fn reset(self: *AppState) void {
         self.chip8.reset();
-        self.time_accumulated = 0;
         self.paused = false;
         self.requires_reset = false;
+        self.last_cycle_time = std.time.milliTimestamp();
     }
 };
 
@@ -239,6 +239,10 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     // try chip8.loadRomFromFile(std.heap.page_allocator, chip8_logo_rom_path);
     appstate.chip8.loadFont();
 
+    // 16ms delay
+    appstate.cycle_delay = 16;
+    appstate.last_cycle_time = std.time.milliTimestamp();
+
     if (appstate_ptr) |ptr| {
         ptr.* = @constCast(appstate);
     }
@@ -259,29 +263,25 @@ fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
         return c.SDL_APP_CONTINUE;
     }
 
-    var start_time: i64 = 0;
-    var end_time: i64 = 0;
-    start_time = std.time.microTimestamp();
-    if (appstate.time_accumulated > appstate.target_frame_time) {
-        clearScreen(appstate);
-        var cycles: u8 = 3;
-        while (cycles != 0) {
-            try appstate.chip8.execute();
-            cycles -= 1;
-        }
+    const current_time = std.time.milliTimestamp();
+    const delay_time = current_time - appstate.last_cycle_time;
 
-        if (appstate.chip8_context.draw_flag) {
-            try render(appstate);
-            appstate.chip8_context.draw_flag = false;
+    if (delay_time > appstate.cycle_delay) {
+        appstate.last_cycle_time = current_time;
+        var i: usize = 0;
+        // 500Hz with 60FPS
+        const cycles_per_frame: usize = 8;
+        while (i < cycles_per_frame) : (i += 1) {
+            try appstate.chip8.execute();
         }
-        appstate.chip8_context.delay_timer = if (appstate.chip8_context.delay_timer == 0) 0 else appstate.chip8_context.delay_timer - 1;
+        if (appstate.chip8_context.draw_flag) {
+            clearScreen(appstate);
+            try render(appstate);
+        }
         appstate.chip8_context.sound_timer = if (appstate.chip8_context.sound_timer == 0) 0 else appstate.chip8_context.sound_timer - 1;
-        appstate.time_accumulated = 0;
+        appstate.chip8_context.draw_flag = false;
+        appstate.chip8_context.delay_timer = if (appstate.chip8_context.delay_timer == 0) 0 else appstate.chip8_context.delay_timer - 1;
     }
-    end_time = std.time.microTimestamp();
-    const delta_time = end_time - start_time;
-    appstate.time_accumulated += delta_time;
-    // c.SDL_Delay(1);
     return c.SDL_APP_CONTINUE;
 }
 
