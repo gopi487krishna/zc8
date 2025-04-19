@@ -46,21 +46,78 @@ const AppState = struct {
 
     pub fn reset(self: *AppState) void {
         self.chip8.reset();
-        self.paused = false;
         self.requires_reset = false;
         self.last_cycle_time = std.time.milliTimestamp();
     }
 
-    pub fn pause_audio(self: *AppState) !void {
+    pub fn pause_audio(self: *AppState) !bool {
+        const previous_state = self.audio_paused;
         try errify(c.SDL_PauseAudioStreamDevice(self.stream));
         self.audio_paused = true;
+        return previous_state;
     }
 
     pub fn resume_audio(self: *AppState) !void {
         if (self.audio_paused)
             try errify(c.SDL_ResumeAudioStreamDevice(self.stream));
     }
+
+    pub fn pause_app(self: *AppState) !bool {
+        self.paused = true;
+        const prev_state = try self.pause_audio();
+        return prev_state;
+    }
+    pub fn resume_app(self: *AppState, audio_paused: bool) void {
+        self.paused = false;
+        self.audio_paused = audio_paused;
+    }
 };
+
+// Only to be used by exported functions below
+var gl_appstate_ptr: ?*AppState = null;
+
+// Exported To JS
+export fn load_pong() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset();
+        appstate.chip8.loadRomFromArray(pong) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_breakout() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset();
+        appstate.chip8.loadRomFromArray(breakout) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_spaceinvaders() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset();
+        appstate.chip8.loadRomFromArray(space_invaders) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
 
 pub fn clearScreen(appstate: *AppState) void {
     _ = c.SDL_SetRenderDrawColor(appstate.renderer, 0, 0, 0, 255);
@@ -221,6 +278,7 @@ fn sdlAppQuit(appstate_ptr: ?*anyopaque, _: anyerror!c.SDL_AppResult) void {
         // Destroy the AppState itself
         const allocator = appstate.allocator;
         c.SDL_free(appstate.wav_data);
+        gl_appstate_ptr = null;
         allocator.destroy(appstate);
     }
 }
@@ -264,26 +322,21 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
         ptr.* = @constCast(appstate);
     }
 
+    gl_appstate_ptr = appstate;
+
     return c.SDL_APP_CONTINUE;
 }
 
 fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
     const appstate: *AppState = @ptrCast(@alignCast(appstate_ptr.?));
 
-    // Audio
-    if (c.SDL_GetAudioStreamQueued(appstate.stream) < appstate.wav_data_len) {
-        try errify(c.SDL_PutAudioStreamData(appstate.stream, appstate.wav_data, @intCast(appstate.wav_data_len)));
-    }
-
     if (appstate.paused) {
         return c.SDL_APP_CONTINUE;
     }
 
-    if (appstate.requires_reset) {
-        appstate.reset();
-        try appstate.chip8.loadRomFromArray(breakout);
-        appstate.chip8.loadFont();
-        return c.SDL_APP_CONTINUE;
+    // Audio
+    if (c.SDL_GetAudioStreamQueued(appstate.stream) < appstate.wav_data_len) {
+        try errify(c.SDL_PutAudioStreamData(appstate.stream, appstate.wav_data, @intCast(appstate.wav_data_len)));
     }
 
     const current_time = std.time.milliTimestamp();
@@ -302,7 +355,7 @@ fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
             try render(appstate);
         }
         if (appstate.chip8_context.sound_timer == 0) {
-            try appstate.pause_audio();
+            _ = try appstate.pause_audio();
         } else {
             try appstate.resume_audio();
             appstate.chip8_context.sound_timer -= 1;
@@ -321,16 +374,6 @@ fn sdlAppEvent(appstate_ptr: ?*anyopaque, event: *c.SDL_Event) !c.SDL_AppResult 
         },
         c.SDL_EVENT_KEY_DOWN => {
             const keycode = event.key.key;
-            // Toggle Pause on Escape Key
-            if (keycode == c.SDLK_ESCAPE) {
-                appstate.paused = !appstate.paused;
-                return c.SDL_APP_CONTINUE;
-            }
-
-            if (keycode == c.SDLK_R) {
-                appstate.requires_reset = true;
-            }
-
             const translated_keycode = translateKeyCode(keycode);
             if (translated_keycode) |value| {
                 appstate.chip8_context.keypad.pressKey(value);
