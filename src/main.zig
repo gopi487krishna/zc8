@@ -29,6 +29,7 @@ const AppState = struct {
     renderer: ?*c.SDL_Renderer,
     scale: c_int,
     time_accumulated: i64 = 0,
+    paused: bool = false,
     target_frame_time: i64 = 1_000_000 / 60, // 60Hz
 };
 
@@ -253,6 +254,10 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
 
 fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
     const appstate: *AppState = @ptrCast(@alignCast(appstate_ptr.?));
+    if (appstate.paused) {
+        return c.SDL_APP_CONTINUE;
+    }
+
     var start_time: i64 = 0;
     var end_time: i64 = 0;
     start_time = std.time.microTimestamp();
@@ -287,6 +292,11 @@ fn sdlAppEvent(appstate_ptr: ?*anyopaque, event: *c.SDL_Event) !c.SDL_AppResult 
         },
         c.SDL_EVENT_KEY_DOWN => {
             const keycode = event.key.key;
+            // Toggle Pause on Escape Key
+            if (keycode == c.SDLK_ESCAPE) {
+                appstate.paused = !appstate.paused;
+                return c.SDL_APP_CONTINUE;
+            }
             const translated_keycode = translateKeyCode(keycode);
             if (translated_keycode) |value| {
                 appstate.chip8_context.keypad.pressKey(value);
