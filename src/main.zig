@@ -17,6 +17,8 @@ const pong = @embedFile("assets/pong.ch8");
 const breakout = @embedFile("assets/breakout.ch8");
 const space_invaders = @embedFile("assets/space_invaders.ch8");
 
+// Beep sound
+const beep = @embedFile("assets/beep.wav");
 // Not sure yet as to why we need to do this.
 pub const os = if (builtin.os.tag != .emscripten and builtin.os.tag != .wasi) std.os else struct {
     pub const heap = struct {
@@ -25,24 +27,38 @@ pub const os = if (builtin.os.tag != .emscripten and builtin.os.tag != .wasi) st
 };
 
 const AppState = struct {
-    allocator: std.mem.Allocator,
-    chip8_context: Chip8Context,
-    chip8: Chip8,
-    width: c_int,
-    height: c_int,
-    window: ?*c.SDL_Window,
-    renderer: ?*c.SDL_Renderer,
-    scale: c_int,
+    allocator: std.mem.Allocator = undefined,
+    chip8_context: Chip8Context = undefined,
+    chip8: Chip8 = undefined,
+    width: c_int = 64,
+    height: c_int = 32,
+    window: ?*c.SDL_Window = undefined,
+    renderer: ?*c.SDL_Renderer = undefined,
+    scale: c_int = 20,
     paused: bool = false,
-    cycle_delay: i64 = 0,
+    cycle_delay: i64 = 16,
     last_cycle_time: i64 = 0,
     requires_reset: bool = false,
+    audio_paused: bool = false,
+    wav_data: [*c]u8 = undefined,
+    wav_data_len: c.Uint32 = undefined,
+    stream: *c.SDL_AudioStream = undefined,
 
     pub fn reset(self: *AppState) void {
         self.chip8.reset();
         self.paused = false;
         self.requires_reset = false;
         self.last_cycle_time = std.time.milliTimestamp();
+    }
+
+    pub fn pause_audio(self: *AppState) !void {
+        try errify(c.SDL_PauseAudioStreamDevice(self.stream));
+        self.audio_paused = true;
+    }
+
+    pub fn resume_audio(self: *AppState) !void {
+        if (self.audio_paused)
+            try errify(c.SDL_ResumeAudioStreamDevice(self.stream));
     }
 };
 
@@ -204,6 +220,7 @@ fn sdlAppQuit(appstate_ptr: ?*anyopaque, _: anyerror!c.SDL_AppResult) void {
         appstate.chip8_context.deinit();
         // Destroy the AppState itself
         const allocator = appstate.allocator;
+        c.SDL_free(appstate.wav_data);
         allocator.destroy(appstate);
     }
 }
@@ -211,16 +228,21 @@ fn sdlAppQuit(appstate_ptr: ?*anyopaque, _: anyerror!c.SDL_AppResult) void {
 fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     const allocator = std.heap.page_allocator;
     const appstate = try allocator.create(AppState);
-    appstate.allocator = allocator;
-    appstate.scale = 20;
-    appstate.width = 64;
-    appstate.height = 32;
+    appstate.* = AppState{
+        .allocator = allocator,
+        .last_cycle_time = std.time.milliTimestamp(),
+    };
 
-    try errify(c.SDL_Init(c.SDL_INIT_VIDEO));
+    try errify(c.SDL_Init(c.SDL_INIT_VIDEO | c.SDL_INIT_AUDIO));
     appstate.window = try errify(c.SDL_CreateWindow("zc8", appstate.width * appstate.scale, appstate.height * appstate.scale, c.SDL_WINDOW_UTILITY));
     appstate.renderer = try errify(c.SDL_CreateRenderer(appstate.window, null));
     _ = c.SDL_UpdateWindowSurface(appstate.window);
     _ = c.SDL_RenderPresent(appstate.renderer);
+
+    // Setup the audio
+    var spec: c.SDL_AudioSpec = undefined;
+    try errify(c.SDL_LoadWAV_IO(c.SDL_IOFromConstMem(beep, beep.len), true, &spec, &appstate.wav_data, &appstate.wav_data_len));
+    appstate.stream = try errify(c.SDL_OpenAudioDeviceStream(c.SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, null, null));
 
     appstate.chip8_context = try Chip8Context.initContext(allocator);
 
@@ -239,10 +261,6 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     // try chip8.loadRomFromFile(std.heap.page_allocator, chip8_logo_rom_path);
     appstate.chip8.loadFont();
 
-    // 16ms delay
-    appstate.cycle_delay = 16;
-    appstate.last_cycle_time = std.time.milliTimestamp();
-
     if (appstate_ptr) |ptr| {
         ptr.* = @constCast(appstate);
     }
@@ -252,6 +270,12 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
 
 fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
     const appstate: *AppState = @ptrCast(@alignCast(appstate_ptr.?));
+
+    // Audio
+    if (c.SDL_GetAudioStreamQueued(appstate.stream) < appstate.wav_data_len) {
+        try errify(c.SDL_PutAudioStreamData(appstate.stream, appstate.wav_data, @intCast(appstate.wav_data_len)));
+    }
+
     if (appstate.paused) {
         return c.SDL_APP_CONTINUE;
     }
@@ -278,7 +302,12 @@ fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
             clearScreen(appstate);
             try render(appstate);
         }
-        appstate.chip8_context.sound_timer = if (appstate.chip8_context.sound_timer == 0) 0 else appstate.chip8_context.sound_timer - 1;
+        if (appstate.chip8_context.sound_timer == 0) {
+            try appstate.pause_audio();
+        } else {
+            try appstate.resume_audio();
+            appstate.chip8_context.sound_timer -= 1;
+        }
         appstate.chip8_context.draw_flag = false;
         appstate.chip8_context.delay_timer = if (appstate.chip8_context.delay_timer == 0) 0 else appstate.chip8_context.delay_timer - 1;
     }
