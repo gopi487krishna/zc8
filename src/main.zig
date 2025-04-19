@@ -31,6 +31,14 @@ const AppState = struct {
     time_accumulated: i64 = 0,
     paused: bool = false,
     target_frame_time: i64 = 1_000_000 / 60, // 60Hz
+    requires_reset: bool = false,
+
+    pub fn reset(self: *AppState) void {
+        self.chip8.reset();
+        self.time_accumulated = 0;
+        self.paused = false;
+        self.requires_reset = false;
+    }
 };
 
 const test_rom = [_]u8{
@@ -258,6 +266,13 @@ fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
         return c.SDL_APP_CONTINUE;
     }
 
+    if (appstate.requires_reset) {
+        appstate.reset();
+        try appstate.chip8.loadRomFromArray(&test_rom);
+        appstate.chip8.loadFont();
+        return c.SDL_APP_CONTINUE;
+    }
+
     var start_time: i64 = 0;
     var end_time: i64 = 0;
     start_time = std.time.microTimestamp();
@@ -297,6 +312,11 @@ fn sdlAppEvent(appstate_ptr: ?*anyopaque, event: *c.SDL_Event) !c.SDL_AppResult 
                 appstate.paused = !appstate.paused;
                 return c.SDL_APP_CONTINUE;
             }
+
+            if (keycode == c.SDLK_R) {
+                appstate.requires_reset = true;
+            }
+
             const translated_keycode = translateKeyCode(keycode);
             if (translated_keycode) |value| {
                 appstate.chip8_context.keypad.pressKey(value);

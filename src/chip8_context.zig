@@ -81,6 +81,20 @@ pub const Chip8Context = struct {
     pub fn deinit(self: *Chip8Context) void {
         self.stack.deinit();
     }
+
+    pub fn reset(self: *Chip8Context) void {
+        @memset(&self.memory, 0);
+        @memset(&self.v, 0);
+        self.i = 0;
+        self.pc = 0x200;
+        self.stack.clearRetainingCapacity();
+        @memset(&self.frame_buffer, 0);
+        self.delay_timer = 0;
+        self.sound_timer = 0;
+        self.rom_length = 0;
+        self.halt = false;
+        self.draw_flag = false;
+    }
 };
 
 test "Chip 8 Context Initialization" {

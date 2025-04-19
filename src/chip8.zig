@@ -334,6 +334,10 @@ pub const Chip8 = struct {
         };
         @memcpy(self.ctx.memory[0x0..sprites.len], sprites[0..]);
     }
+
+    pub fn reset(self: *Chip8) void {
+        self.ctx.reset();
+    }
 };
 
 test "Chip8.loadRomFromFile" {
