@@ -59,7 +59,6 @@ pub fn build(b: *std.Build) void {
             run_emcc.addArtifactArg(compile);
         }
 
-        std.debug.print("REACHED HERE\n", .{});
         run_emcc.addArgs(&.{
             "-sUSE_OFFSET_CONVERTER", // Required by Zig's '@returnAddress'
             "-sLEGACY_RUNTIME", // Currently required by SDL
