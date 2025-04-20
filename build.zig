@@ -17,7 +17,12 @@ pub fn build(b: *std.Build) void {
     });
 
     // Add SDL3 dependency to the module
-    app_mod.linkLibrary(sdl_dep.artifact("SDL3"));
+    if (target.query.isNativeOs() and target.result.os.tag == .linux) {
+        // Nixos
+        app_mod.linkSystemLibrary("SDL3", .{});
+    } else {
+        app_mod.linkLibrary(sdl_dep.artifact("SDL3"));
+    }
 
     const run = b.step("run", "Run the app");
 
