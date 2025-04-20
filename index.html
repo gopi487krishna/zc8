@@ -30,7 +30,7 @@
               <option value="tank">Tank</option>
               <option value="astrododge">Astrododge</option>
               <option value="filter">Filter</option>
-              <option value="lunarlander">Lunar Lander</option>
+              <option value="animalrace">Animal Race</option>
               <option value="tetris">Tetris</option>
           </select>
         </div>
@@ -73,7 +73,7 @@
               window.load_astrododge = Module.cwrap('load_astrododge', 'void', 'void');
 
               window.load_filter = Module.cwrap('load_filter', 'void', 'void');
-              window.load_lunarlander = Module.cwrap('load_lunarlander', 'void', 'void');
+              window.load_animalrace = Module.cwrap('load_animalrace', 'void', 'void');
 
               window.load_tetris = Module.cwrap('load_tetris', 'void', 'void');
 
@@ -120,8 +120,8 @@
                   load_astrododge();
                 else if (value == "filter")
                   load_filter();
-                else if (value == "lunarlander")
-                  load_lunarlander();
+                else if (value == "animalrace")
+                  load_animalrace();
                 else if (value == "tetris")
                   load_tetris();
               
