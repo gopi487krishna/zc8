@@ -11512,6 +11512,7 @@ var _load_filter = Module['_load_filter'] = createExportWrapper('load_filter', 0
 var _load_lunarlander = Module['_load_lunarlander'] = createExportWrapper('load_lunarlander', 0);
 var _load_tetris = Module['_load_tetris'] = createExportWrapper('load_tetris', 0);
 var _enable_shiftquirk = Module['_enable_shiftquirk'] = createExportWrapper('enable_shiftquirk', 1);
+var _enable_loadstore_quirk = Module['_enable_loadstore_quirk'] = createExportWrapper('enable_loadstore_quirk', 1);
 var _disable_audio = Module['_disable_audio'] = createExportWrapper('disable_audio', 1);
 var _SDL_malloc = Module['_SDL_malloc'] = createExportWrapper('SDL_malloc', 1);
 var _SDL_calloc = Module['_SDL_calloc'] = createExportWrapper('SDL_calloc', 2);
