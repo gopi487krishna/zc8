@@ -1,0 +1,42 @@
+name: Build and deploy zc8
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    name: Build zc8
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Zig Setup
+        uses: mlugg/setup-zig@v1
+        with:
+          version: 0.14.0
+
+      - name: Emscripten Setup
+        uses: mymindstorm/setup-emsdk@v14
+
+      - name: Build zc8
+        run: |
+          emcc -v
+          zig version
+          zig build -Dtarget=wasm32-emscripten -Doptimize=Debug --sysroot "$(em-config CACHE)/sysroot"
+
+      - name: Prepare websites directory
+        run: |
+          cp zig-out/www/zc8.js website/
+          cp zig-out/www/zc8.wasm website/
+          ls website
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./website
