@@ -11,18 +11,13 @@ pub fn build(b: *std.Build) void {
         .link_libc = target.result.os.tag == .emscripten,
     });
 
+    const sdl_dep = b.dependency("sdl", .{
+        .optimize = .ReleaseFast,
+        .target = target,
+    });
+
     // Add SDL3 dependency to the module
-    if (target.query.isNativeOs() and target.result.os.tag == .linux) {
-        // The SDL package doesn't work for Linux yet, so we rely on system
-        // packages for now.
-        app_mod.linkSystemLibrary("SDL3", .{});
-    } else {
-        const sdl_dep = b.dependency("sdl", .{
-            .optimize = .ReleaseFast,
-            .target = target,
-        });
-        app_mod.linkLibrary(sdl_dep.artifact("SDL3"));
-    }
+    app_mod.linkLibrary(sdl_dep.artifact("SDL3"));
 
     const run = b.step("run", "Run the app");
 
@@ -133,23 +128,24 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         });
         app_unit_tests.root_module.addOptions("build_options", build_options);
+        app_unit_tests.linkLibrary(sdl_dep.artifact("SDL3"));
 
         // Context State Tests
         const chip8_context_tests = b.addTest(.{
             .root_source_file = b.path("src/chip8_context.zig"),
             .target = target,
             .optimize = optimize,
-            .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
         });
         chip8_context_tests.root_module.addOptions("build_options", build_options);
+        chip8_context_tests.linkLibrary(sdl_dep.artifact("SDL3"));
 
         const chip8_tests = b.addTest(.{
             .root_source_file = b.path("src/chip8.zig"),
             .target = target,
             .optimize = optimize,
-            .test_runner = .{ .path = b.path("test_runner.zig"), .mode = .simple },
         });
         chip8_tests.root_module.addOptions("build_options", build_options);
+        chip8_tests.linkLibrary(sdl_dep.artifact("SDL3"));
 
         const run_app_unit_tests = b.addRunArtifact(app_unit_tests);
         const run_chip8_context_tests = b.addRunArtifact(chip8_context_tests);
