@@ -38,15 +38,13 @@ const AppState = struct {
     paused: bool = false,
     cycle_delay: i64 = 16,
     last_cycle_time: i64 = 0,
-    requires_reset: bool = false,
     audio_paused: bool = false,
     wav_data: [*c]u8 = undefined,
     wav_data_len: c.Uint32 = undefined,
     stream: *c.SDL_AudioStream = undefined,
 
-    pub fn reset(self: *AppState) void {
+    pub fn reset_emulator(self: *AppState) void {
         self.chip8.reset();
-        self.requires_reset = false;
         self.last_cycle_time = std.time.milliTimestamp();
     }
 
@@ -82,7 +80,7 @@ export fn load_pong() void {
         const prev_audio_state = appstate.pause_app() catch {
             return;
         };
-        appstate.reset();
+        appstate.reset_emulator();
         appstate.chip8.loadRomFromArray(pong) catch {
             return;
         };
@@ -96,7 +94,7 @@ export fn load_breakout() void {
         const prev_audio_state = appstate.pause_app() catch {
             return;
         };
-        appstate.reset();
+        appstate.reset_emulator();
         appstate.chip8.loadRomFromArray(breakout) catch {
             return;
         };
@@ -110,7 +108,7 @@ export fn load_spaceinvaders() void {
         const prev_audio_state = appstate.pause_app() catch {
             return;
         };
-        appstate.reset();
+        appstate.reset_emulator();
         appstate.chip8.loadRomFromArray(space_invaders) catch {
             return;
         };
