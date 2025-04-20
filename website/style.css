@@ -26,6 +26,64 @@ body {
     position: relative; /* Needed if children use absolute positioning relative to it */
 }
 
+.select-container {
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    z-index: 10; 
+    position: relative; 
+    margin-bottom: 2.5rem; 
+    gap: 10px;
+}
+
+.setting-container {
+    font-size: 1rem; /* Large size for title */
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    z-index: 10; 
+    color: #0f0; /* Green */
+    position: relative; 
+    margin-top: 2.5rem; 
+    gap: 20px;
+}
+
+
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background-color: #000;
+  border: 2px solid #0f0;
+  position: relative;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 4px;
+  height: 10px;
+  border: solid #0f0;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+
+input[type="checkbox"]:checked::before {
+  opacity: 1;
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 4px #0f0;
+}
+
+
 
 /* Retro Title Styles */
 .retro-title {
@@ -40,6 +98,21 @@ body {
     /* Apply the flashing animation */
     animation: flash 1.5s infinite step-end; /* name duration iteration-count timing-function */
 }
+
+.retro-label {
+  color: #0f0;
+  margin-bottom: 1rem; 
+}
+
+.retro-select {
+  font-family: 'Press Start 2P', cursive;
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+  color: #fff; /* White text */
+  font-size: 15; /* Match label size */
+  box-shadow: 0 0 8px #0f0; /* Neon glow */
+  cursor: pointer;
+}
+
 
 
 /* Keyframe animation for flashing effect */
@@ -70,6 +143,17 @@ body {
         0 0 4px #0bf;  /* Slightly wider minimal blue glow */
     margin-bottom: 2rem; /* Space below subtitle, above frame */
     letter-spacing: 1px; /* Slight letter spacing */
+}
+
+#settings-icon svg {
+  width: 32px;  /* Adjust size as needed */
+  height: 32px; /* Adjust size as needed */
+  fill: none;
+  stroke: #0f0; 
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px #0f0); /* Neon glow effect */
 }
 
 
