@@ -298,12 +298,16 @@ pub const Chip8 = struct {
                 self.ctx.memory[i + 2] = Vx_val % 10;
             },
             .LD_I_Vx => {
-                @memcpy(self.ctx.memory[self.ctx.i .. self.ctx.i + Vx + 1], self.ctx.v[0 .. Vx + 1]);
-                self.ctx.i = self.ctx.i + Vx + 1;
+                // Promote Vx to avoid overflow
+                const Vx_promoted = @as(u8, Vx);
+                @memcpy(self.ctx.memory[self.ctx.i .. self.ctx.i + Vx_promoted + 1], self.ctx.v[0 .. Vx_promoted + 1]);
+                self.ctx.i = self.ctx.i + Vx_promoted + 1;
             },
             .LD_Vx_I => {
-                @memcpy(self.ctx.v[0 .. Vx + 1], self.ctx.memory[self.ctx.i .. self.ctx.i + Vx + 1]);
-                self.ctx.i = self.ctx.i + Vx + 1;
+                // Promote Vx to avoid overflow
+                const Vx_promoted = @as(u8, Vx);
+                @memcpy(self.ctx.v[0 .. Vx_promoted + 1], self.ctx.memory[self.ctx.i .. self.ctx.i + Vx_promoted + 1]);
+                self.ctx.i = self.ctx.i + Vx_promoted + 1;
             },
             .UNIMPLEMENTED => return Chip8Error.InstructionNotSupported,
         }
@@ -350,6 +354,7 @@ pub const Chip8 = struct {
 
     pub fn reset(self: *Chip8) void {
         self.ctx.reset();
+        self.shift_quirk_enabled = false;
     }
 };
 
