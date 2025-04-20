@@ -48,6 +48,34 @@ body {
     gap: 20px;
 }
 
+.main-layout {
+    font-size: 1rem; /* Large size for title */
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    z-index: 10; 
+    color: #0f0; /* Green */
+    position: relative; 
+    gap: 80px;
+}
+
+.key-table {
+    color: #0f0; /* Green */
+    border: 2px solid #0f0;
+}
+
+
+.key-table td {
+    color: #fff; 
+    border: 1px solid #0f0;
+    padding: 1px 1px; /* Adjust padding */
+    font-size: 11px;    /* Smaller base font */
+    min-width: 35px;   /* Adjust min width */
+    height: 40px;      /* Give cells a fixed height */
+    text-align: center;
+    vertical-align: middle; /* Center content vertically */
+}
+
 
 input[type="checkbox"] {
   appearance: none;
