@@ -1,0 +1,298 @@
+body {
+  background-color: black;
+  background-image: url('assets/background_stars.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  display: flex;
+  justify-content: center;
+  /* We want to align items center */
+  align-items: center;
+  margin: 0; 
+  padding: 0;
+  min-height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Hide shadows and overflows from circles */
+  text-align: center; /* Center text globally */
+  position: relative; 
+  /* Arcade style font */
+  font-family: 'Press Start 2P', cursive; /* Apply retro font globally */
+}
+
+.content-container {
+    display: flex;
+    flex-direction: column; /* Stack title, subtitle, and frame vertically */
+    align-items: center; /* Center items horizontally within the container */
+    z-index: 10; /* Ensure main content is above corner circles */
+    position: relative; /* Needed if children use absolute positioning relative to it */
+}
+
+.select-container {
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    z-index: 10; 
+    position: relative; 
+    margin-bottom: 2.5rem; 
+    gap: 10px;
+}
+
+.setting-container {
+    font-size: 1rem; /* Large size for title */
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    z-index: 10; 
+    color: #0f0; /* Green */
+    position: relative; 
+    margin-top: 2.5rem; 
+    gap: 20px;
+}
+
+
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background-color: #000;
+  border: 2px solid #0f0;
+  position: relative;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+input[type="checkbox"]::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 4px;
+  height: 10px;
+  border: solid #0f0;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+
+input[type="checkbox"]:checked::before {
+  opacity: 1;
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 4px #0f0;
+}
+
+
+
+/* Retro Title Styles */
+.retro-title {
+    font-size: 4rem; /* Large size for title */
+    color: #0f0; /* Green */
+    /* Reduced blur text-shadow for sharpness */
+    text-shadow:
+        0 0 2px #0f0, /* Green */
+        0 0 5px #0f0, /* Green */
+        0 0 8px #0f0; /* Green */
+    margin-bottom: 0.5rem; /* Space below title */
+    /* Apply the flashing animation */
+    animation: flash 1.5s infinite step-end; /* name duration iteration-count timing-function */
+}
+
+.retro-label {
+  color: #0f0;
+  margin-bottom: 1rem; 
+}
+
+.retro-select {
+  font-family: 'Press Start 2P', cursive;
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+  color: #fff; /* White text */
+  font-size: 15; /* Match label size */
+  box-shadow: 0 0 8px #0f0; /* Neon glow */
+  cursor: pointer;
+}
+
+
+
+/* Keyframe animation for flashing effect */
+@keyframes flash {
+    0%, 100% { /* Fully visible state */
+        opacity: 1;
+        text-shadow:
+            0 0 2px #0f0, /* Green */
+            0 0 5px #0f0, /* Green */
+            0 0 8px #0f0; /* Green */
+    }
+    50% { /* Dimmed state */
+        opacity: 0.6;
+        text-shadow:
+            0 0 1px #0f0, /* Green */
+            0 0 2px #0f0; /* Green */
+    }
+}
+
+
+/* Retro Subtitle Styles */
+.retro-subtitle {
+    font-size: 1rem; /* Smaller size for subtitle */
+    color: #0bf; /* Neon blue */
+    /* Subtle neon blue glow */
+    text-shadow:
+        0 0 2px #0bf,  /* Minimal blue glow */
+        0 0 4px #0bf;  /* Slightly wider minimal blue glow */
+    margin-bottom: 2rem; /* Space below subtitle, above frame */
+    letter-spacing: 1px; /* Slight letter spacing */
+}
+
+#settings-icon svg {
+  width: 32px;  /* Adjust size as needed */
+  height: 32px; /* Adjust size as needed */
+  fill: none;
+  stroke: #0f0; 
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px #0f0); /* Neon glow effect */
+}
+
+
+/* Neon Frame styles */
+.neon-frame {
+    width: 640px;
+    height: 320px;
+
+    /* Neon effect using border and box-shadow */
+    border: 2px solid #0f0; /* Green */
+    border-radius: 10px; /* Slightly rounded corners */
+    box-shadow:
+        0 0 5px #0f0,       /* Inner glow - Green */
+        0 0 10px #0f0,      /* Middle glow - Green */
+        0 0 20px #0f0,      /* Outer glow - Green */
+        0 0 40px #0f0,      /* Wider outer glow - Green */
+        inset 0 0 5px #0f0; /* Inner border glow - Green */
+
+    /* Centering is now handled by flexbox on the body and content-container */
+
+    /* Ensure frame is below the GitHub banner but above circles */
+    z-index: 5; /* Lower than content-container, higher than circles */
+    position: relative; /* Ensure z-index stacking context */
+}
+
+
+#canvas {
+  border-radius: 10px; /* make corners round */
+}
+
+
+/* GitHub Corner styles */
+.github-corner:hover .octo-arm {
+    animation: octocat-wave 560ms ease-in-out;
+}
+
+@keyframes octocat-wave {
+    0%, 100% { transform: rotate(0); }
+    20%, 60% { transform: rotate(-25deg); }
+    40%, 80% { transform: rotate(10deg); }
+}
+/* Github Banner */
+@media (max-width:500px) {
+    .github-corner:hover .octo-arm { animation: none; }
+    .github-corner .octo-arm { animation: octocat-wave 560ms ease-in-out; }
+}
+
+/* Ensure banner stays on top if other content is added */
+.github-corner {
+    z-index: 1000; /* High z-index to stay on top */
+    position: absolute; /* Keep banner positioning independent */
+    top: 0;
+    right: 0;
+}
+
+
+
+.game-circle {
+  width: 350px;
+  height: 350px;
+  border: 3px solid #0bf; /* Neon blue border */
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden; /* Clip content if needed */
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+  box-shadow:
+      0 0 3px #0bf,
+      0 0 8px #0bf,
+      0 0 15px #0bf,
+      inset 0 0 5px rgba(0, 187, 255, 0.5); /* Subtle inner blue glow */
+  background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent black background */
+  transition: box-shadow 0.3s ease, transform 0.3s ease; /* Smooth hover effect */
+}
+
+.game-circle:hover {
+    box-shadow:
+        0 0 5px #0bf,
+        0 0 15px #0bf,
+        0 0 30px #0bf, /* Brighter glow on hover */
+        inset 0 0 8px rgba(0, 187, 255, 0.6);
+    transform: scale(2.02); 
+}
+
+
+.game-circle.top-left {
+  top: -220px;
+  left: -220px;
+  align-items: flex-end; /* Align text towards bottom */
+  justify-content: flex-end; /* Align text towards right */
+  /* Adjust text position for visibility */
+  align-items: flex-end; /* Align text towards bottom */
+  justify-content: flex-end; /* Align text towards right */
+  padding: 0 30px 80px 0; /* Padding to push text into visible area */
+}
+
+
+.game-name {
+    color: #fff; /* White text */
+    text-shadow: 0 0 3px #fff; /* Subtle white glow */
+    transform: rotate(-45deg); /* Default rotation */
+    max-width: 130px; /* Constrain width */
+    text-align: center;
+    animation: flash 2.5s infinite step-end; /* name duration iteration-count timing-function */
+}
+
+.game-circle.bottom-left {
+  bottom: -220px;
+  left: -220px;
+  padding: 80px 60px 0 0; /* Padding to push text into visible area */
+  align-items: flex-start; /* Align text towards top */
+  justify-content: flex-end; /* Align text towards right */
+}
+
+.game-circle.bottom-right {
+  bottom: -220px;
+  right: -220px;
+  /* Adjust text position for visibility */
+  align-items: flex-start; /* Align text towards top */
+  justify-content: flex-start; /* Align text towards left */
+  padding: 95px 0 0 35px; /* Padding to push text into visible area */
+}
+
+.game-name {
+    color: #fff; /* White text */
+    text-shadow: 0 0 3px #fff; /* Subtle white glow */
+    transform: rotate(-45deg); /* Default rotation */
+    max-width: 130px; /* Constrain width */
+    text-align: center;
+}
+
+/* Face towards center */
+.bottom-right .game-name {
+    transform: rotate(45deg);
+}
+
+/* Face towards center */
+.top-left .game-name {
+    transform: rotate(45deg);
+}
