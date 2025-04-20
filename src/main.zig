@@ -16,6 +16,12 @@ const testing = std.testing;
 const pong = @embedFile("assets/pong.ch8");
 const breakout = @embedFile("assets/breakout.ch8");
 const space_invaders = @embedFile("assets/space_invaders.ch8");
+const blinky = @embedFile("assets/blinky.ch8");
+const tank = @embedFile("assets/tank.ch8");
+const astrododge = @embedFile("assets/astrododge.ch8");
+const filter = @embedFile("assets/filter.ch8");
+const lunar_lander = @embedFile("assets/lunar_lander.ch8");
+const tetris = @embedFile("assets/tetris.ch8");
 
 // Beep sound
 const beep = @embedFile("assets/beep.wav");
@@ -123,6 +129,96 @@ export fn load_spaceinvaders() void {
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
         appstate.chip8.loadRomFromArray(space_invaders) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_blinky() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(blinky) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_tank() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(tank) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_astrododge() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(astrododge) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_filter() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(filter) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_lunarlander() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(lunar_lander) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_tetris() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(tetris) catch {
             return;
         };
         appstate.chip8.loadFont();
@@ -260,7 +356,6 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     appstate.chip8 = Chip8{ .ctx = &appstate.chip8_context };
     appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
     try appstate.chip8.loadRomFromArray(pong);
-    // try chip8.loadRomFromFile(std.heap.page_allocator, chip8_logo_rom_path);
     appstate.chip8.loadFont();
 
     if (appstate_ptr) |ptr| {
