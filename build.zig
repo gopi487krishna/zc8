@@ -67,7 +67,7 @@ pub fn build(b: *std.Build) void {
             "\'_load_tank\'," ++
             "\'_load_astrododge\'," ++
             "\'_load_filter\'," ++
-            "\'_load_lunarlander\'," ++
+            "\'_load_animalrace\'," ++
             "\'_load_tetris\'," ++
             "\'_enable_shiftquirk\'," ++
             "\'_enable_loadstore_quirk\'," ++

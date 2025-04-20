@@ -20,7 +20,7 @@ const blinky = @embedFile("assets/blinky.ch8");
 const tank = @embedFile("assets/tank.ch8");
 const astrododge = @embedFile("assets/astrododge.ch8");
 const filter = @embedFile("assets/filter.ch8");
-const lunar_lander = @embedFile("assets/lunar_lander.ch8");
+const animal_race = @embedFile("assets/animal_race.ch8");
 const tetris = @embedFile("assets/tetris.ch8");
 
 // Beep sound
@@ -204,7 +204,7 @@ export fn load_filter() void {
     }
 }
 
-export fn load_lunarlander() void {
+export fn load_animalrace() void {
     if (gl_appstate_ptr) |appstate| {
         const prev_audio_state = appstate.pause_app() catch {
             return;
@@ -212,7 +212,7 @@ export fn load_lunarlander() void {
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
         appstate.chip8.load_store_quirk = appstate.load_store_quirk;
-        appstate.chip8.loadRomFromArray(lunar_lander) catch {
+        appstate.chip8.loadRomFromArray(animal_race) catch {
             return;
         };
         appstate.chip8.loadFont();
