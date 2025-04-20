@@ -6,6 +6,12 @@ The emulator is compiled to WebAssembly using Emscripten, allowing it to run dir
 
 This project was developed as a way to gain hands-on experience with Zig, WebAssembly, Emscripten, and emulator development.
 
+## Screenshots
+
+|           ![Pong](docs/img/pong.png)           |     ![Blinky](docs/img/blinky.png)     |
+| :--------------------------------------------: | :------------------------------------: |
+| ![Space Invaders](docs/img/space_invaders.png) | ![Breakout](docs/img/breakout.png) |
+
 ## Building zc8
 
 ### Setting Up Dependencies
