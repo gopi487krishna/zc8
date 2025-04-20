@@ -57,12 +57,28 @@ pub fn build(b: *std.Build) void {
             run_emcc.addArtifactArg(compile);
         }
 
+        const exported_functions =
+            "-sEXPORTED_FUNCTIONS=[" ++
+            "\'_main\'," ++
+            "\'_load_pong\'," ++
+            "\'_load_breakout\'," ++
+            "\'_load_spaceinvaders\'," ++
+            "\'_load_blinky\'," ++
+            "\'_load_tank\'," ++
+            "\'_load_astrododge\'," ++
+            "\'_load_filter\'," ++
+            "\'_load_lunarlander\'," ++
+            "\'_load_tetris\'," ++
+            "\'_enable_shiftquirk\'," ++
+            "\'_disable_audio\'" ++
+            "]";
+
         run_emcc.addArgs(&.{
             "-sUSE_OFFSET_CONVERTER", // Required by Zig's '@returnAddress'
             "-sLEGACY_RUNTIME", // Currently required by SDL
             "-sMIN_WEBGL_VERSION=2",
             "-sFULL_ES3", // Currently required by zigglgen
-            "-sEXPORTED_FUNCTIONS=['_main', '_load_pong', '_load_spaceinvaders', '_load_breakout', '_enable_shiftquirk', '_disable_audio']",
+            exported_functions,
             "-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap']",
         });
 

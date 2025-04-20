@@ -24,8 +24,14 @@
           <select id="game-select" name="games" class="retro-select">
               <option value="">-- Select a Game --</option>
               <option value="breakout">Breakout</option>
-              <option value="space_invaders">Space Invaders</option>
+              <option value="spaceinvaders">Space Invaders</option>
               <option value="pong">Pong</option>
+              <option value="blinky">Blinky</option>
+              <option value="tank">Tank</option>
+              <option value="astrododge">Astrododge</option>
+              <option value="filter">Filter</option>
+              <option value="lunarlander">Lunar Lander</option>
+              <option value="tetris">Tetris</option>
           </select>
         </div>
         <!-- Neon Frame -->
@@ -60,23 +66,62 @@
               window.load_pong = Module.cwrap('load_pong', 'void', 'void');
               window.load_breakout = Module.cwrap('load_breakout', 'void', 'void');
               window.load_spaceinvaders = Module.cwrap('load_spaceinvaders', 'void', 'void');
+
+              window.load_blinky = Module.cwrap('load_blinky', 'void', 'void');
+              window.load_tank = Module.cwrap('load_tank', 'void', 'void');
+              window.load_astrododge = Module.cwrap('load_astrododge', 'void', 'void');
+
+              window.load_filter = Module.cwrap('load_filter', 'void', 'void');
+              window.load_lunarlander = Module.cwrap('load_lunarlander', 'void', 'void');
+
+              window.load_tetris = Module.cwrap('load_tetris', 'void', 'void');
+
               window.enable_shiftquirk = Module.cwrap('enable_shiftquirk', 'void', 'bool');
               window.disable_audio = Module.cwrap('disable_audio', 'void', 'bool');
 
               document.getElementById('pong').onclick = () => {
-                document.getElementById('game-select').value = 'pong';
+                const select = document.getElementById('game-select').value = 'pong';
                 load_pong();
               };
 
               document.getElementById('breakout').onclick = () => {
-                document.getElementById('game-select').value = 'breakout';
+                const select = document.getElementById('game-select').value = 'breakout';
                 load_breakout();
               };
 
               document.getElementById('spaceinvaders').onclick = () => {
-                document.getElementById('game-select').value = 'space_invaders';
+                const select = document.getElementById('game-select').value = 'spaceinvaders';
                 load_spaceinvaders();
               };
+
+              document.getElementById("game-select").addEventListener("change", function(event) {
+                const value = event.target.value;
+                if (value == "pong")
+                  load_pong();
+                else if (value == "breakout")
+                  load_breakout();
+                else if (value == "spaceinvaders") {
+                  enable_shiftquirk(true);
+                  document.getElementById('shift-quirk-checkbox').checked = 'checked';
+                  load_spaceinvaders();
+                }
+                else if (value == "blinky") {
+                  enable_shiftquirk(true);
+                  document.getElementById('shift-quirk-checkbox').checked = 'checked';
+                  load_blinky();
+                }
+                else if (value == "tank")
+                  load_tank();
+                else if (value == "astrododge")
+                  load_astrododge();
+                else if (value == "filter")
+                  load_filter();
+                else if (value == "lunarlander")
+                  load_lunarlander();
+                else if (value == "tetris")
+                  load_tetris();
+              
+              });
 
               document.getElementById('shift-quirk-checkbox').addEventListener('change', (event) => {
                 if (event.currentTarget.checked) {
