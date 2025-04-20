@@ -16,6 +16,12 @@ const testing = std.testing;
 const pong = @embedFile("assets/pong.ch8");
 const breakout = @embedFile("assets/breakout.ch8");
 const space_invaders = @embedFile("assets/space_invaders.ch8");
+const blinky = @embedFile("assets/blinky.ch8");
+const tank = @embedFile("assets/tank.ch8");
+const astrododge = @embedFile("assets/astrododge.ch8");
+const filter = @embedFile("assets/filter.ch8");
+const lunar_lander = @embedFile("assets/lunar_lander.ch8");
+const tetris = @embedFile("assets/tetris.ch8");
 
 // Beep sound
 const beep = @embedFile("assets/beep.wav");
@@ -34,33 +40,207 @@ const AppState = struct {
     height: c_int = 32,
     window: ?*c.SDL_Window = undefined,
     renderer: ?*c.SDL_Renderer = undefined,
-    scale: c_int = 20,
+    scale: c_int = 10,
     paused: bool = false,
     cycle_delay: i64 = 16,
     last_cycle_time: i64 = 0,
-    requires_reset: bool = false,
     audio_paused: bool = false,
     wav_data: [*c]u8 = undefined,
     wav_data_len: c.Uint32 = undefined,
     stream: *c.SDL_AudioStream = undefined,
+    shift_quirk_enabled: bool = false,
+    disable_audio_state: bool = false,
 
-    pub fn reset(self: *AppState) void {
+    pub fn reset_emulator(self: *AppState) void {
         self.chip8.reset();
-        self.paused = false;
-        self.requires_reset = false;
         self.last_cycle_time = std.time.milliTimestamp();
     }
 
-    pub fn pause_audio(self: *AppState) !void {
+    pub fn pause_audio(self: *AppState) !bool {
+        const previous_state = self.audio_paused;
         try errify(c.SDL_PauseAudioStreamDevice(self.stream));
         self.audio_paused = true;
+        return previous_state;
     }
 
     pub fn resume_audio(self: *AppState) !void {
-        if (self.audio_paused)
+        if (self.audio_paused and !self.disable_audio_state)
             try errify(c.SDL_ResumeAudioStreamDevice(self.stream));
     }
+
+    pub fn disable_audio(self: *AppState) void {
+        self.disable_audio_state = true;
+    }
+
+    pub fn enable_audio(self: *AppState) void {
+        self.disable_audio_state = false;
+    }
+
+    pub fn pause_app(self: *AppState) !bool {
+        self.paused = true;
+        const prev_state = try self.pause_audio();
+        return prev_state;
+    }
+    pub fn resume_app(self: *AppState, audio_paused: bool) void {
+        self.paused = false;
+        self.audio_paused = audio_paused;
+    }
 };
+
+// Only to be used by exported functions below
+var gl_appstate_ptr: ?*AppState = null;
+
+// JS Exported API's
+export fn load_pong() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(pong) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_breakout() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(breakout) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_spaceinvaders() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(space_invaders) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_blinky() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(blinky) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_tank() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(tank) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_astrododge() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(astrododge) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_filter() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(filter) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_lunarlander() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(lunar_lander) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn load_tetris() void {
+    if (gl_appstate_ptr) |appstate| {
+        const prev_audio_state = appstate.pause_app() catch {
+            return;
+        };
+        appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.loadRomFromArray(tetris) catch {
+            return;
+        };
+        appstate.chip8.loadFont();
+        appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn enable_shiftquirk(state: bool) void {
+    if (gl_appstate_ptr) |appstate| {
+        appstate.shift_quirk_enabled = state;
+    }
+}
+
+export fn disable_audio(state: bool) void {
+    if (gl_appstate_ptr) |appstate| {
+        if (state) {
+            appstate.disable_audio();
+        } else {
+            appstate.enable_audio();
+        }
+    }
+}
 
 pub fn clearScreen(appstate: *AppState) void {
     _ = c.SDL_SetRenderDrawColor(appstate.renderer, 0, 0, 0, 255);
@@ -143,77 +323,6 @@ pub fn render(appstate: *AppState) !void {
     }
 }
 
-// pub fn main() !void {
-//     var display = DisplayDriver {
-//         .scale = 10,
-//         .window = null,
-//         .renderer = null,
-//         .width = 64,
-//         .height = 32
-//     };
-//
-//     try display.init();
-//     defer display.deinit();
-//     display.clearScreen();
-//
-//
-//     var ctx = try Chip8Context.initContext(allocator);
-//     defer ctx.deinit();
-//
-//     var args = std.process.args();
-//     _ = args.skip(); //to skip the zig call
-//
-//
-//
-//     // var chip8_logo_rom_path: []const u8 = undefined;
-//     // if (args.next()) |path| {
-//         // chip8_logo_rom_path = try std.fs.cwd().realpathAlloc(std.heap.page_allocator, path);
-//         // std.debug.print("Path : {s}\n", .{chip8_logo_rom_path});
-//     // }
-//     // else {
-//         // std.debug.print("No path provided!\n", .{});
-//         // std.process.exit(1);
-//     // }
-//
-//     var chip8 = Chip8{ .ctx = &ctx};
-//     try chip8.loadRomFromArray(&test_rom);
-//     // try chip8.loadRomFromFile(std.heap.page_allocator, chip8_logo_rom_path);
-//     chip8.loadFont();
-//
-//     var start_time: i64 = 0;
-//     var end_time: i64 = 0;
-//     var time_accumulated: i64 = 0;
-//     const target_frame_time = 1_000_000 / 60; // 60Hz
-//
-//     var quit = false;
-//
-//     while (!quit) {
-//         std.time.sleep(200);
-//         const delta_time = end_time - start_time;
-//         start_time = std.time.microTimestamp();
-//         time_accumulated += delta_time;
-//         if (time_accumulated > target_frame_time) {
-//             display.clearScreen();
-//             quit = DisplayDriver.handleEvents(&ctx);
-//             var cycles:u8 = 1;
-//             while (cycles != 0) {
-//                 try chip8.execute();
-//                 cycles -= 1;
-//             }
-//
-//             if (ctx.draw_flag) {
-//                 try display.update(&ctx);
-//                 ctx.draw_flag = false;
-//             }
-//             ctx.delay_timer = if (ctx.delay_timer == 0) 0 else ctx.delay_timer - 1;
-//             ctx.sound_timer = if (ctx.sound_timer == 0) 0 else ctx.sound_timer - 1;
-//             time_accumulated = 0;
-//         }
-//         end_time = std.time.microTimestamp();
-//
-//     }
-// }
-
 fn sdlAppQuit(appstate_ptr: ?*anyopaque, _: anyerror!c.SDL_AppResult) void {
     if (appstate_ptr) |ptr| {
         const appstate: *AppState = @ptrCast(@alignCast(ptr));
@@ -221,6 +330,7 @@ fn sdlAppQuit(appstate_ptr: ?*anyopaque, _: anyerror!c.SDL_AppResult) void {
         // Destroy the AppState itself
         const allocator = appstate.allocator;
         c.SDL_free(appstate.wav_data);
+        gl_appstate_ptr = null;
         allocator.destroy(appstate);
     }
 }
@@ -232,7 +342,6 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
         .allocator = allocator,
         .last_cycle_time = std.time.milliTimestamp(),
     };
-
     try errify(c.SDL_Init(c.SDL_INIT_VIDEO | c.SDL_INIT_AUDIO));
     appstate.window = try errify(c.SDL_CreateWindow("zc8", appstate.width * appstate.scale, appstate.height * appstate.scale, c.SDL_WINDOW_UTILITY));
     appstate.renderer = try errify(c.SDL_CreateRenderer(appstate.window, null));
@@ -243,27 +352,17 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     var spec: c.SDL_AudioSpec = undefined;
     try errify(c.SDL_LoadWAV_IO(c.SDL_IOFromConstMem(beep, beep.len), true, &spec, &appstate.wav_data, &appstate.wav_data_len));
     appstate.stream = try errify(c.SDL_OpenAudioDeviceStream(c.SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, null, null));
-
     appstate.chip8_context = try Chip8Context.initContext(allocator);
-
-    // var chip8_logo_rom_path: []const u8 = undefined;
-    // if (args.next()) |path| {
-    // chip8_logo_rom_path = try std.fs.cwd().realpathAlloc(std.heap.page_allocator, path);
-    // std.debug.print("Path : {s}\n", .{chip8_logo_rom_path});
-    // }
-    // else {
-    // std.debug.print("No path provided!\n", .{});
-    // std.process.exit(1);
-    // }
-
     appstate.chip8 = Chip8{ .ctx = &appstate.chip8_context };
+    appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
     try appstate.chip8.loadRomFromArray(pong);
-    // try chip8.loadRomFromFile(std.heap.page_allocator, chip8_logo_rom_path);
     appstate.chip8.loadFont();
 
     if (appstate_ptr) |ptr| {
         ptr.* = @constCast(appstate);
     }
+
+    gl_appstate_ptr = appstate;
 
     return c.SDL_APP_CONTINUE;
 }
@@ -271,20 +370,13 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
 fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
     const appstate: *AppState = @ptrCast(@alignCast(appstate_ptr.?));
 
-    // Audio
-    if (c.SDL_GetAudioStreamQueued(appstate.stream) < appstate.wav_data_len) {
-        try errify(c.SDL_PutAudioStreamData(appstate.stream, appstate.wav_data, @intCast(appstate.wav_data_len)));
-    }
-
     if (appstate.paused) {
         return c.SDL_APP_CONTINUE;
     }
 
-    if (appstate.requires_reset) {
-        appstate.reset();
-        try appstate.chip8.loadRomFromArray(breakout);
-        appstate.chip8.loadFont();
-        return c.SDL_APP_CONTINUE;
+    // Audio
+    if (c.SDL_GetAudioStreamQueued(appstate.stream) < appstate.wav_data_len) {
+        try errify(c.SDL_PutAudioStreamData(appstate.stream, appstate.wav_data, @intCast(appstate.wav_data_len)));
     }
 
     const current_time = std.time.milliTimestamp();
@@ -303,7 +395,7 @@ fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
             try render(appstate);
         }
         if (appstate.chip8_context.sound_timer == 0) {
-            try appstate.pause_audio();
+            _ = try appstate.pause_audio();
         } else {
             try appstate.resume_audio();
             appstate.chip8_context.sound_timer -= 1;
@@ -322,16 +414,6 @@ fn sdlAppEvent(appstate_ptr: ?*anyopaque, event: *c.SDL_Event) !c.SDL_AppResult 
         },
         c.SDL_EVENT_KEY_DOWN => {
             const keycode = event.key.key;
-            // Toggle Pause on Escape Key
-            if (keycode == c.SDLK_ESCAPE) {
-                appstate.paused = !appstate.paused;
-                return c.SDL_APP_CONTINUE;
-            }
-
-            if (keycode == c.SDLK_R) {
-                appstate.requires_reset = true;
-            }
-
             const translated_keycode = translateKeyCode(keycode);
             if (translated_keycode) |value| {
                 appstate.chip8_context.keypad.pressKey(value);

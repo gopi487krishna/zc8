@@ -6,6 +6,7 @@ pub const Chip8Error = error{ RomTooLarge, InstructionNotSupported, PcOutOfBound
 
 pub const Chip8 = struct {
     ctx: *Chip8Context,
+    shift_quirk_enabled: bool = false,
 
     const Opcode = enum {
         SYS_addr, // 0nnn
@@ -180,8 +181,14 @@ pub const Chip8 = struct {
                 self.ctx.v[0xF] = borrow;
             },
             .SHR_Vx_Vy => {
-                self.ctx.v[0xF] = self.ctx.v[Vy] & 1;
-                self.ctx.v[Vx] = self.ctx.v[Vy] >> 1;
+                var shift_by_reg = Vy;
+                if (self.shift_quirk_enabled) {
+                    // https://faizilham.github.io/revisiting-chip8
+                    // Shifting quriks
+                    shift_by_reg = Vx;
+                }
+                self.ctx.v[0xF] = self.ctx.v[shift_by_reg] & 1;
+                self.ctx.v[Vx] = self.ctx.v[shift_by_reg] >> 1;
             },
             .SUBN_Vx_Vy => {
                 const result = @subWithOverflow(self.ctx.v[Vy], self.ctx.v[Vx]);
@@ -190,8 +197,14 @@ pub const Chip8 = struct {
                 self.ctx.v[0xF] = borrow;
             },
             .SHL_Vx_Vy => {
-                self.ctx.v[0xF] = (self.ctx.v[Vy] & 0x80) >> 7;
-                self.ctx.v[Vx] = self.ctx.v[Vy] << 1;
+                var shift_by_reg = Vy;
+                if (self.shift_quirk_enabled) {
+                    // https://faizilham.github.io/revisiting-chip8
+                    // Shifting quriks
+                    shift_by_reg = Vx;
+                }
+                self.ctx.v[0xF] = (self.ctx.v[shift_by_reg] & 0x80) >> 7;
+                self.ctx.v[Vx] = self.ctx.v[shift_by_reg] << 1;
             },
             .SNE_Vx_Vy => {
                 if (self.ctx.v[Vx] != self.ctx.v[Vy])
@@ -285,12 +298,16 @@ pub const Chip8 = struct {
                 self.ctx.memory[i + 2] = Vx_val % 10;
             },
             .LD_I_Vx => {
-                @memcpy(self.ctx.memory[self.ctx.i .. self.ctx.i + Vx + 1], self.ctx.v[0 .. Vx + 1]);
-                self.ctx.i = self.ctx.i + Vx + 1;
+                // Promote Vx to avoid overflow
+                const Vx_promoted = @as(u8, Vx);
+                @memcpy(self.ctx.memory[self.ctx.i .. self.ctx.i + Vx_promoted + 1], self.ctx.v[0 .. Vx_promoted + 1]);
+                self.ctx.i = self.ctx.i + Vx_promoted + 1;
             },
             .LD_Vx_I => {
-                @memcpy(self.ctx.v[0 .. Vx + 1], self.ctx.memory[self.ctx.i .. self.ctx.i + Vx + 1]);
-                self.ctx.i = self.ctx.i + Vx + 1;
+                // Promote Vx to avoid overflow
+                const Vx_promoted = @as(u8, Vx);
+                @memcpy(self.ctx.v[0 .. Vx_promoted + 1], self.ctx.memory[self.ctx.i .. self.ctx.i + Vx_promoted + 1]);
+                self.ctx.i = self.ctx.i + Vx_promoted + 1;
             },
             .UNIMPLEMENTED => return Chip8Error.InstructionNotSupported,
         }
@@ -337,6 +354,7 @@ pub const Chip8 = struct {
 
     pub fn reset(self: *Chip8) void {
         self.ctx.reset();
+        self.shift_quirk_enabled = false;
     }
 };
 
