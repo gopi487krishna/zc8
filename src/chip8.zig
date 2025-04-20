@@ -7,6 +7,7 @@ pub const Chip8Error = error{ RomTooLarge, InstructionNotSupported, PcOutOfBound
 pub const Chip8 = struct {
     ctx: *Chip8Context,
     shift_quirk_enabled: bool = false,
+    load_store_quirk: bool = false,
 
     const Opcode = enum {
         SYS_addr, // 0nnn
@@ -301,13 +302,17 @@ pub const Chip8 = struct {
                 // Promote Vx to avoid overflow
                 const Vx_promoted = @as(u8, Vx);
                 @memcpy(self.ctx.memory[self.ctx.i .. self.ctx.i + Vx_promoted + 1], self.ctx.v[0 .. Vx_promoted + 1]);
-                self.ctx.i = self.ctx.i + Vx_promoted + 1;
+                if (!self.load_store_quirk) {
+                    self.ctx.i = self.ctx.i + Vx_promoted + 1;
+                }
             },
             .LD_Vx_I => {
                 // Promote Vx to avoid overflow
                 const Vx_promoted = @as(u8, Vx);
                 @memcpy(self.ctx.v[0 .. Vx_promoted + 1], self.ctx.memory[self.ctx.i .. self.ctx.i + Vx_promoted + 1]);
-                self.ctx.i = self.ctx.i + Vx_promoted + 1;
+                if (!self.load_store_quirk) {
+                    self.ctx.i = self.ctx.i + Vx_promoted + 1;
+                }
             },
             .UNIMPLEMENTED => return Chip8Error.InstructionNotSupported,
         }
@@ -355,6 +360,7 @@ pub const Chip8 = struct {
     pub fn reset(self: *Chip8) void {
         self.ctx.reset();
         self.shift_quirk_enabled = false;
+        self.load_store_quirk = false;
     }
 };
 

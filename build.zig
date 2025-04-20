@@ -70,6 +70,7 @@ pub fn build(b: *std.Build) void {
             "\'_load_lunarlander\'," ++
             "\'_load_tetris\'," ++
             "\'_enable_shiftquirk\'," ++
+            "\'_enable_loadstore_quirk\'," ++
             "\'_disable_audio\'" ++
             "]";
 

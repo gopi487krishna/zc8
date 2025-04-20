@@ -49,6 +49,7 @@ const AppState = struct {
     wav_data_len: c.Uint32 = undefined,
     stream: *c.SDL_AudioStream = undefined,
     shift_quirk_enabled: bool = false,
+    load_store_quirk: bool = false,
     disable_audio_state: bool = false,
 
     pub fn reset_emulator(self: *AppState) void {
@@ -98,6 +99,7 @@ export fn load_pong() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(pong) catch {
             return;
         };
@@ -113,6 +115,7 @@ export fn load_breakout() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(breakout) catch {
             return;
         };
@@ -128,6 +131,7 @@ export fn load_spaceinvaders() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(space_invaders) catch {
             return;
         };
@@ -143,6 +147,7 @@ export fn load_blinky() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(blinky) catch {
             return;
         };
@@ -158,6 +163,7 @@ export fn load_tank() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(tank) catch {
             return;
         };
@@ -173,6 +179,7 @@ export fn load_astrododge() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(astrododge) catch {
             return;
         };
@@ -188,6 +195,7 @@ export fn load_filter() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(filter) catch {
             return;
         };
@@ -203,6 +211,7 @@ export fn load_lunarlander() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(lunar_lander) catch {
             return;
         };
@@ -218,6 +227,7 @@ export fn load_tetris() void {
         };
         appstate.reset_emulator();
         appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+        appstate.chip8.load_store_quirk = appstate.load_store_quirk;
         appstate.chip8.loadRomFromArray(tetris) catch {
             return;
         };
@@ -229,6 +239,12 @@ export fn load_tetris() void {
 export fn enable_shiftquirk(state: bool) void {
     if (gl_appstate_ptr) |appstate| {
         appstate.shift_quirk_enabled = state;
+    }
+}
+
+export fn enable_loadstore_quirk(state: bool) void {
+    if (gl_appstate_ptr) |appstate| {
+        appstate.load_store_quirk = state;
     }
 }
 
@@ -355,6 +371,7 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     appstate.chip8_context = try Chip8Context.initContext(allocator);
     appstate.chip8 = Chip8{ .ctx = &appstate.chip8_context };
     appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
+    appstate.chip8.load_store_quirk = appstate.load_store_quirk;
     try appstate.chip8.loadRomFromArray(pong);
     appstate.chip8.loadFont();
 

@@ -41,6 +41,7 @@
         </div>
         <div class="setting-container">
           <label>Shift Quirk<input type="checkbox" id="shift-quirk-checkbox"></label>
+          <label>Load Store Quirk<input type="checkbox" id="loadstore-quirk-checkbox"></label>
           <label>Disable Sound<input type="checkbox" id="disable-sound-checkbox"></label>
         </div>
     </div>
@@ -77,6 +78,7 @@
               window.load_tetris = Module.cwrap('load_tetris', 'void', 'void');
 
               window.enable_shiftquirk = Module.cwrap('enable_shiftquirk', 'void', 'bool');
+              window.enable_loadstore_quirk = Module.cwrap('enable_loadstore_quirk', 'void', 'bool');
               window.disable_audio = Module.cwrap('disable_audio', 'void', 'bool');
 
               document.getElementById('pong').onclick = () => {
@@ -107,7 +109,9 @@
                 }
                 else if (value == "blinky") {
                   enable_shiftquirk(true);
+                  enable_loadstore_quirk(true);
                   document.getElementById('shift-quirk-checkbox').checked = 'checked';
+                  document.getElementById('loadstore-quirk-checkbox').checked = 'checked';
                   load_blinky();
                 }
                 else if (value == "tank")
@@ -131,6 +135,16 @@
                   enable_shiftquirk(false);
                 }
               });
+
+              document.getElementById('loadstore-quirk-checkbox').addEventListener('change', (event) => {
+                if (event.currentTarget.checked) {
+                  enable_loadstore_quirk(true);
+                }
+                else {
+                  enable_loadstore_quirk(false);
+                }
+              });
+
 
               document.getElementById('disable-sound-checkbox').addEventListener('change', (event) => {
                 if (event.currentTarget.checked) {
