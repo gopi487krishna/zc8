@@ -18,6 +18,18 @@ body {
   font-family: 'Press Start 2P', cursive; /* Apply retro font globally */
 }
 
+
+@media only screen and (max-width: 768px) {
+  body {
+    display: none;
+  }
+  .mobile-disabled-message {
+    display: block;
+  }
+}
+
+
+
 .content-container {
     display: flex;
     flex-direction: column; /* Stack title, subtitle, and frame vertically */
