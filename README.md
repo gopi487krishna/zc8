@@ -1,5 +1,7 @@
 # zc8
 
+![Build Passing](https://github.com/gopi487krishna/zc8/actions/workflows/action.yml/badge.svg)
+
 zc8 is a lightweight Chip-8 emulator implemented in Zig, designed to provide a clean and minimal implementation of the classic Chip-8 virtual machine. It is well-suited for experimentation, and running retro games.
 
 The emulator is compiled to WebAssembly using Emscripten, allowing it to run directly in the browser. SDL3 is used for handling graphics and input and sound.
