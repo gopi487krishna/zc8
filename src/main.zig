@@ -42,6 +42,8 @@ const AppState = struct {
     wav_data: [*c]u8 = undefined,
     wav_data_len: c.Uint32 = undefined,
     stream: *c.SDL_AudioStream = undefined,
+    shift_quirk_enabled: bool = false,
+    disable_audio_state: bool = false,
 
     pub fn reset_emulator(self: *AppState) void {
         self.chip8.reset();
@@ -56,8 +58,16 @@ const AppState = struct {
     }
 
     pub fn resume_audio(self: *AppState) !void {
-        if (self.audio_paused)
+        if (self.audio_paused and !self.disable_audio_state)
             try errify(c.SDL_ResumeAudioStreamDevice(self.stream));
+    }
+
+    pub fn disable_audio(self: *AppState) void {
+        self.disable_audio_state = true;
+    }
+
+    pub fn enable_audio(self: *AppState) void {
+        self.disable_audio_state = false;
     }
 
     pub fn pause_app(self: *AppState) !bool {
@@ -74,13 +84,14 @@ const AppState = struct {
 // Only to be used by exported functions below
 var gl_appstate_ptr: ?*AppState = null;
 
-// Exported To JS
+// JS Exported API's
 export fn load_pong() void {
     if (gl_appstate_ptr) |appstate| {
         const prev_audio_state = appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
         appstate.chip8.loadRomFromArray(pong) catch {
             return;
         };
@@ -95,6 +106,7 @@ export fn load_breakout() void {
             return;
         };
         appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
         appstate.chip8.loadRomFromArray(breakout) catch {
             return;
         };
@@ -109,11 +121,28 @@ export fn load_spaceinvaders() void {
             return;
         };
         appstate.reset_emulator();
+        appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
         appstate.chip8.loadRomFromArray(space_invaders) catch {
             return;
         };
         appstate.chip8.loadFont();
         appstate.resume_app(prev_audio_state);
+    }
+}
+
+export fn enable_shiftquirk(state: bool) void {
+    if (gl_appstate_ptr) |appstate| {
+        appstate.shift_quirk_enabled = state;
+    }
+}
+
+export fn disable_audio(state: bool) void {
+    if (gl_appstate_ptr) |appstate| {
+        if (state) {
+            appstate.disable_audio();
+        } else {
+            appstate.enable_audio();
+        }
     }
 }
 
@@ -229,6 +258,7 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     appstate.stream = try errify(c.SDL_OpenAudioDeviceStream(c.SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, null, null));
     appstate.chip8_context = try Chip8Context.initContext(allocator);
     appstate.chip8 = Chip8{ .ctx = &appstate.chip8_context };
+    appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
     try appstate.chip8.loadRomFromArray(pong);
     // try chip8.loadRomFromFile(std.heap.page_allocator, chip8_logo_rom_path);
     appstate.chip8.loadFont();

@@ -62,7 +62,7 @@ pub fn build(b: *std.Build) void {
             "-sLEGACY_RUNTIME", // Currently required by SDL
             "-sMIN_WEBGL_VERSION=2",
             "-sFULL_ES3", // Currently required by zigglgen
-            "-sEXPORTED_FUNCTIONS=['_main', '_load_pong', '_load_spaceinvaders', '_load_breakout']",
+            "-sEXPORTED_FUNCTIONS=['_main', '_load_pong', '_load_spaceinvaders', '_load_breakout', '_enable_shiftquirk', '_disable_audio']",
             "-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap']",
         });
 
