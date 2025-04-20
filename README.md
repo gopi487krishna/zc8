@@ -8,13 +8,13 @@ The emulator is compiled to WebAssembly using Emscripten, allowing it to run dir
 
 This project was developed as a way to gain hands-on experience with Zig, WebAssembly, Emscripten, and emulator development.
 
-## Screenshots
+## 📸 Screenshots
 
 |           ![Pong](docs/img/pong.png)           |     ![Blinky](docs/img/blinky.png)     |
 | :--------------------------------------------: | :------------------------------------: |
 | ![Space Invaders](docs/img/space_invaders.png) | ![Breakout](docs/img/breakout.png) |
 
-## Building zc8
+## 🔨 Building zc8
 
 ### Setting Up Dependencies
 
@@ -44,7 +44,7 @@ zig build -Dtarget=wasm32-emscripten -Doptimize=Debug --sysroot "$(em-config CAC
 zig build test --summary all
 ```
 
-## Resources
+## 📚 Resources
 - [Guide To Making A CHIP-8 Emulator](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/)
 - [Revisiting Chip 8](https://faizilham.github.io/revisiting-chip8)
 - [CHIP-8 Research Facility](https://chip-8.github.io/)
@@ -66,13 +66,13 @@ zig build test --summary all
 - [Poolsuite.net](https://poolsuite.net/)
 - [WinZip-1997](https://webflow.com/made-in-webflow/website/winzip-1997)
 
-## Contributing
+## 📥 Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-## License
+## 📜 License
 
 [MIT](https://choosealicense.com/licenses/mit/)
