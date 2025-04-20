@@ -20,10 +20,22 @@
     <div class="content-container">
         <h1 class="retro-title">zc8</h1>
         <p class="retro-subtitle">A chip 8 emulator written in zig</p>
+        <div class="select-container">
+          <select id="game-select" name="games" class="retro-select">
+              <option value="">-- Select a Game --</option>
+              <option value="breakout">Breakout</option>
+              <option value="space_invaders">Space Invaders</option>
+              <option value="pong">Pong</option>
+          </select>
+        </div>
         <!-- Neon Frame -->
         <div class="neon-frame">
           <!-- Create the canvas that the C++ code will draw into -->
           <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+        </div>
+        <div class="setting-container">
+          <label>Shift Quirk<input type="checkbox" id="shift-quirk-checkbox"></label>
+          <label>Disable Sound<input type="checkbox" id="disable-sound-checkbox"></label>
         </div>
     </div>
 
@@ -48,21 +60,44 @@
               window.load_pong = Module.cwrap('load_pong', 'void', 'void');
               window.load_breakout = Module.cwrap('load_breakout', 'void', 'void');
               window.load_spaceinvaders = Module.cwrap('load_spaceinvaders', 'void', 'void');
+              window.enable_shiftquirk = Module.cwrap('enable_shiftquirk', 'void', 'bool');
+              window.disable_audio = Module.cwrap('disable_audio', 'void', 'bool');
 
               document.getElementById('pong').onclick = () => {
+                document.getElementById('game-select').value = 'pong';
                 load_pong();
               };
 
               document.getElementById('breakout').onclick = () => {
+                document.getElementById('game-select').value = 'breakout';
                 load_breakout();
               };
 
               document.getElementById('spaceinvaders').onclick = () => {
+                document.getElementById('game-select').value = 'space_invaders';
                 load_spaceinvaders();
               };
 
+              document.getElementById('shift-quirk-checkbox').addEventListener('change', (event) => {
+                if (event.currentTarget.checked) {
+                  enable_shiftquirk(true);
+                }
+                else {
+                  enable_shiftquirk(false);
+                }
+              });
 
+              document.getElementById('disable-sound-checkbox').addEventListener('change', (event) => {
+                if (event.currentTarget.checked) {
+                  console.log("Running this");
+                  disable_audio(true);
+                }
+                else {
+                  console.log("Running other");
+                  disable_audio(false);
+                }
 
+              });
 
             }
         };
