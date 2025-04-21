@@ -18,6 +18,7 @@ body {
   font-family: 'Press Start 2P', cursive; /* Apply retro font globally */
 }
 
+
 .content-container {
     display: flex;
     flex-direction: column; /* Stack title, subtitle, and frame vertically */
@@ -74,6 +75,40 @@ body {
     height: 40px;      /* Give cells a fixed height */
     text-align: center;
     vertical-align: middle; /* Center content vertically */
+}
+
+.smallwindow-message {
+  display: none;
+  color: #0f0;
+}
+
+
+@media (max-width: 1024px) {
+  .neon-frame {
+    display: none;
+  }
+  .setting-container {
+    display: none;
+  }
+  .select-container {
+    display: none;
+  }
+  .main-layout {
+    display: none;
+  }
+  .game-circle.top-left {
+    display: none;
+  }
+  .game-circle.bottom-left {
+    display: none;
+  }
+  .game-circle.bottom-right {
+    display: none;
+  }
+  .smallwindow-message {
+    display: flex;
+  }
+
 }
 
 
