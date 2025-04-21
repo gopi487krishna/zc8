@@ -145,6 +145,38 @@
               window.enable_loadstore_quirk = Module.cwrap('enable_loadstore_quirk', 'void', 'bool');
               window.disable_audio = Module.cwrap('disable_audio', 'void', 'bool');
 
+
+              function get_game_function(game) {
+                if (game == "pong") {
+                  return load_pong;
+                }
+                else if (game == "breakout") {
+                  return load_breakout;
+                }
+                else if (game == "spaceinvaders") {
+                  return load_spaceinvaders;
+                }
+                else if (game == "blinky") {
+                  return load_blinky;
+                }
+                else if (game == "tank") {
+                  return load_tank;
+                }
+                else if (game == "astrododge") {
+                  return load_astrododge;
+                }
+                else if (game == "filter") {
+                  return load_filter
+                }
+                else if (game == "animalrace") {
+                  return load_animalrace;
+                }
+                else if (game == "tetris") {
+                  return load_tetris;
+                }
+
+              }
+
               document.getElementById('pong').onclick = () => {
                 const select = document.getElementById('game-select').value = 'pong';
                 load_pong();
@@ -162,51 +194,46 @@
 
               document.getElementById("game-select").addEventListener("change", function(event) {
                 const value = event.target.value;
-                if (value == "pong")
-                  load_pong();
-                else if (value == "breakout")
-                  load_breakout();
-                else if (value == "spaceinvaders") {
+
+                const game_function = get_game_function(value);
+
+                if (value == "spaceinvaders") {
                   enable_shiftquirk(true);
                   document.getElementById('shift-quirk-checkbox').checked = 'checked';
-                  load_spaceinvaders();
                 }
                 else if (value == "blinky") {
                   enable_shiftquirk(true);
                   enable_loadstore_quirk(true);
                   document.getElementById('shift-quirk-checkbox').checked = 'checked';
                   document.getElementById('loadstore-quirk-checkbox').checked = 'checked';
-                  load_blinky();
                 }
-                else if (value == "tank")
-                  load_tank();
-                else if (value == "astrododge")
-                  load_astrododge();
-                else if (value == "filter")
-                  load_filter();
-                else if (value == "animalrace")
-                  load_animalrace();
-                else if (value == "tetris")
-                  load_tetris();
-              
+
+                game_function();
+
               });
 
               document.getElementById('shift-quirk-checkbox').addEventListener('change', (event) => {
+                const value = document.getElementById("game-select").value;
                 if (event.currentTarget.checked) {
                   enable_shiftquirk(true);
                 }
                 else {
                   enable_shiftquirk(false);
                 }
+                const game_function = get_game_function(value);
+                game_function();
               });
 
               document.getElementById('loadstore-quirk-checkbox').addEventListener('change', (event) => {
+                const value = document.getElementById("game-select").value;
                 if (event.currentTarget.checked) {
                   enable_loadstore_quirk(true);
                 }
                 else {
                   enable_loadstore_quirk(false);
                 }
+                const game_function = get_game_function(value);
+                game_function();
               });
 
 
