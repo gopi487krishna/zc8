@@ -71,6 +71,8 @@ pub fn build(b: *std.Build) void {
             "\'_load_tetris\'," ++
             "\'_enable_shiftquirk\'," ++
             "\'_enable_loadstore_quirk\'," ++
+            "\'_pause_app\'," ++
+            "\'_resume_app\'," ++
             "\'_disable_audio\'" ++
             "]";
 
