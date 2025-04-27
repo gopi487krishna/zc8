@@ -45,6 +45,7 @@ const AppState = struct {
     cycle_delay: i64 = 16,
     last_cycle_time: i64 = 0,
     audio_paused: bool = false,
+    previous_audio_state: bool = false,
     wav_data: [*c]u8 = undefined,
     wav_data_len: c.Uint32 = undefined,
     stream: *c.SDL_AudioStream = undefined,
@@ -54,14 +55,14 @@ const AppState = struct {
 
     pub fn reset_emulator(self: *AppState) void {
         self.chip8.reset();
+        self.previous_audio_state = false;
         self.last_cycle_time = std.time.milliTimestamp();
     }
 
-    pub fn pause_audio(self: *AppState) !bool {
-        const previous_state = self.audio_paused;
+    pub fn pause_audio(self: *AppState) !void {
+        self.previous_audio_state = self.audio_paused;
         try errify(c.SDL_PauseAudioStreamDevice(self.stream));
         self.audio_paused = true;
-        return previous_state;
     }
 
     pub fn resume_audio(self: *AppState) !void {
@@ -77,14 +78,13 @@ const AppState = struct {
         self.disable_audio_state = false;
     }
 
-    pub fn pause_app(self: *AppState) !bool {
+    pub fn pause_app(self: *AppState) !void {
         self.paused = true;
-        const prev_state = try self.pause_audio();
-        return prev_state;
+        try self.pause_audio();
     }
-    pub fn resume_app(self: *AppState, audio_paused: bool) void {
+    pub fn resume_app(self: *AppState) void {
+        self.audio_paused = self.previous_audio_state;
         self.paused = false;
-        self.audio_paused = audio_paused;
     }
 };
 
@@ -92,9 +92,23 @@ const AppState = struct {
 var gl_appstate_ptr: ?*AppState = null;
 
 // JS Exported API's
+export fn pause_app() void {
+    if (gl_appstate_ptr) |appstate| {
+        appstate.pause_app() catch {
+            return;
+        };
+    }
+}
+
+export fn resume_app() void {
+    if (gl_appstate_ptr) |appstate| {
+        appstate.resume_app();
+    }
+}
+
 export fn load_pong() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -104,13 +118,13 @@ export fn load_pong() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
 export fn load_breakout() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -120,13 +134,13 @@ export fn load_breakout() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
 export fn load_spaceinvaders() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -136,13 +150,13 @@ export fn load_spaceinvaders() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
 export fn load_blinky() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -152,13 +166,13 @@ export fn load_blinky() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
 export fn load_tank() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -168,13 +182,13 @@ export fn load_tank() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
 export fn load_astrododge() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -184,13 +198,13 @@ export fn load_astrododge() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
 export fn load_filter() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -200,13 +214,13 @@ export fn load_filter() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
 export fn load_animalrace() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -216,13 +230,13 @@ export fn load_animalrace() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
 export fn load_tetris() void {
     if (gl_appstate_ptr) |appstate| {
-        const prev_audio_state = appstate.pause_app() catch {
+        appstate.pause_app() catch {
             return;
         };
         appstate.reset_emulator();
@@ -232,7 +246,7 @@ export fn load_tetris() void {
             return;
         };
         appstate.chip8.loadFont();
-        appstate.resume_app(prev_audio_state);
+        appstate.resume_app();
     }
 }
 
@@ -412,7 +426,7 @@ fn sdlAppIterate(appstate_ptr: ?*anyopaque) !c.SDL_AppResult {
             try render(appstate);
         }
         if (appstate.chip8_context.sound_timer == 0) {
-            _ = try appstate.pause_audio();
+            try appstate.pause_audio();
         } else {
             try appstate.resume_audio();
             appstate.chip8_context.sound_timer -= 1;
