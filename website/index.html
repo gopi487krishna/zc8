@@ -145,6 +145,9 @@
               window.enable_loadstore_quirk = Module.cwrap('enable_loadstore_quirk', 'void', 'bool');
               window.disable_audio = Module.cwrap('disable_audio', 'void', 'bool');
 
+              window.pause_app = Module.cwrap('pause_app', 'void', 'void');
+              window.resume_app = Module.cwrap('resume_app', 'void', 'void');
+
 
               function get_game_function(game) {
                 if (game == "pong") {
@@ -237,6 +240,16 @@
 
               });
 
+              const mediaQuery = window.matchMedia('(max-width: 1024px)')
+              function handleWindowSizeChange(e) {
+                if (e.matches) {
+                  pause_app()
+                }
+                else {
+                  resume_app()
+                }
+              }
+              mediaQuery.addListener(handleWindowSizeChange)
             }
         };
     </script>
