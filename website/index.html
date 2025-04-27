@@ -196,18 +196,6 @@
                 const value = event.target.value;
 
                 const game_function = get_game_function(value);
-
-                if (value == "spaceinvaders") {
-                  enable_shiftquirk(true);
-                  document.getElementById('shift-quirk-checkbox').checked = 'checked';
-                }
-                else if (value == "blinky") {
-                  enable_shiftquirk(true);
-                  enable_loadstore_quirk(true);
-                  document.getElementById('shift-quirk-checkbox').checked = 'checked';
-                  document.getElementById('loadstore-quirk-checkbox').checked = 'checked';
-                }
-
                 game_function();
 
               });
