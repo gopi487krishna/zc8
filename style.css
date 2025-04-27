@@ -225,6 +225,8 @@ input[type="checkbox"]:focus {
     width: 640px;
     height: 320px;
 
+    background: black;
+
     /* Neon effect using border and box-shadow */
     border: 2px solid #0f0; /* Green */
     border-radius: 10px; /* Slightly rounded corners */
