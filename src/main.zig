@@ -386,8 +386,9 @@ fn sdlAppInit(appstate_ptr: ?*?*anyopaque, _: [][*:0]u8) !c.SDL_AppResult {
     appstate.chip8 = Chip8{ .ctx = &appstate.chip8_context };
     appstate.chip8.shift_quirk_enabled = appstate.shift_quirk_enabled;
     appstate.chip8.load_store_quirk = appstate.load_store_quirk;
-    try appstate.chip8.loadRomFromArray(pong);
-    appstate.chip8.loadFont();
+    try appstate.pause_app();
+    // try appstate.chip8.loadRomFromArray(pong);
+    // appstate.chip8.loadFont();
 
     if (appstate_ptr) |ptr| {
         ptr.* = @constCast(appstate);
