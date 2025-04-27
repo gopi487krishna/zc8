@@ -11502,6 +11502,8 @@ var wasmExports;
 createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
 var _main = Module['_main'] = createExportWrapper('main', 2);
+var _pause_app = Module['_pause_app'] = createExportWrapper('pause_app', 0);
+var _resume_app = Module['_resume_app'] = createExportWrapper('resume_app', 0);
 var _load_pong = Module['_load_pong'] = createExportWrapper('load_pong', 0);
 var _load_breakout = Module['_load_breakout'] = createExportWrapper('load_breakout', 0);
 var _load_spaceinvaders = Module['_load_spaceinvaders'] = createExportWrapper('load_spaceinvaders', 0);
